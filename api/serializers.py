@@ -48,7 +48,6 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         and create the JSON
     """
     password2 = serializers.CharField(max_length=50, write_only=True)
-    is_driver = serializers.BooleanField(default=False, write_only=True)
 
     class Meta:
         """
@@ -68,12 +67,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('password2')  # Remove password2 from saving
-        is_driver = validated_data.pop('is_driver', False)
         password = validated_data.pop('password')
         user = User.objects.create_user(**validated_data)
         user.set_password(password)
         user.save()
-        if is_driver:
-            # Logic to mark the user as a driver if needed
-            pass  # Add logic here if needed
         return user

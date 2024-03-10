@@ -55,7 +55,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         """
         model = User
         fields = ['username', 'first_name', 'last_name', 'email',
-                  'birth_date', 'password', 'password2', 'is_driver']
+                  'birth_date', 'password', 'password2',]
         extra_kwargs = {
             'password': {'write_only': True},
         }

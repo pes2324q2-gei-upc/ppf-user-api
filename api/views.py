@@ -1,15 +1,37 @@
-from django.http import HttpResponse
-from ppf.common.models.user import MyUser, Driver
-from .serializers import UserSerializer
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
-from rest_framework import status
+"""
+This file contains all the views to implement the api    
+"""
 
-# Create your views here.
+from rest_framework.filters import SearchFilter, OrderingFilter
+# from rest_framework.views import APIView
+from rest_framework import generics
+from ppf.common.models.user import User, Driver
+from .serializers import UserSerializer, DriverSerializer
 
 
-@api_view(['GET'])
-def home(request):
-    users = MyUser.objects.all()
-    serializer = UserSerializer(users, many=True)
-    return Response(data=serializer.data, status=status.HTTP_200_OK)
+class UserList(generics.ListAPIView):
+    """
+    The class that will generate a list of all the users
+
+    Args:
+        generics (ListAPIView): This generates a list of users and pass it as json for the response
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['username']
+    order_fields = ['points', 'created_at', 'updated_at']
+
+
+class DriverList(generics.ListAPIView):
+    """
+    The class that will generate a list of all the drivers
+
+    Args:
+        generics (ListAPIView): This generates a list of users and pass it as json for the response
+    """
+    queryset = Driver.objects.all()
+    serializer_class = DriverSerializer
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['username']
+    order_fields = ['driver_points', 'created_at', 'updated_at']

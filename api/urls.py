@@ -20,6 +20,7 @@ from django.urls import path
 from api import views
 
 urlpatterns = [
-    path('', views.home, name='home'),
+    path('', views.UserList.as_view(), name='userList'),
+    path('drivers/', views.DriverList.as_view(), name='driverList')
 
 ]

@@ -22,4 +22,7 @@ from api import views
 urlpatterns = [
     path('users/', views.UserListCreate.as_view(), name='userListCreate'),
     path('drivers/', views.DriverListCreate.as_view(), name='driverListCreate'),
+    path('drivers/<int:pk>/', views.DriverRetriever.as_view(),
+         name='driverRetriever'),
+    path('users/<int:pk>/', views.UserRetriever.as_view(), name='userRetriever'),
 ]

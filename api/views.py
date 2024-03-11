@@ -46,3 +46,28 @@ class DriverListCreate(generics.ListCreateAPIView):
         if self.request.method == 'POST':
             return DriverRegisterSerializer
         return super().get_serializer_class()
+
+
+class DriverRetriever(generics.RetrieveUpdateDestroyAPIView):
+    """
+    The Retriever for the Driver class
+
+    Args:
+        generics (RetrieveUpdateDestroyAPIView): Concrete view for retrieving, 
+        updating or deleting a model instance.
+    """
+    queryset = Driver.objects.all()
+    serializer_class = DriverSerializer
+
+
+class UserRetriever(generics.RetrieveUpdateDestroyAPIView):
+    """
+
+    The Retriever for the User class
+
+    Args:
+        generics (RetrieveUpdateDestroyAPIView): Concrete view for retrieving, 
+        updating or deleting a model instance.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer

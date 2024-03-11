@@ -19,7 +19,11 @@ class UserSerializer(serializers.ModelSerializer):
         The Meta definition for user
         """
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'points']
+        fields = ['id', 'username', 'first_name',
+                  'last_name', 'email', 'points']
+        extra_kwargs = {
+            'points': {'read_only': True},
+        }
 
 
 class DriverSerializer(serializers.ModelSerializer):
@@ -35,8 +39,12 @@ class DriverSerializer(serializers.ModelSerializer):
         The Meta definition for Driver
         """
         model = Driver
-        fields = ['username', 'first_name',
+        fields = ['id', 'username', 'first_name',
                   'last_name', 'email', 'driver_points']
+
+        extra_kwargs = {
+            'driver_points': {'read_only': True}
+        }
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -93,6 +101,7 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
                   'birth_date', 'password', 'password2', 'dni']
         extra_kwargs = {
             'password': {'write_only': True},
+            'driver_points': {'read_only': True}
         }
 
     def validate(self, attrs):

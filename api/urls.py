@@ -18,10 +18,18 @@ Including another URLconf
 
 from django.urls import path
 from api import views
+from rest_framework.routers import DefaultRouter
+
+
+router = DefaultRouter()
+router.register(r'users-set', views.UserViewSet, basename='user')
 
 urlpatterns = [
     path('users/', views.UserList.as_view(), name='userList'),
-    path('users/register', views.UserRegister.as_view(), name='userRegister'),
+    path('users/register/', views.UserRegister.as_view(), name='userRegister'),
     path('drivers/', views.DriverList.as_view(), name='driverList'),
-    path('drivers/register', views.DriverRegister.as_view(), name='driverRegister'),
+    path('drivers/register/', views.DriverRegister.as_view(), name='driverRegister'),
+    path('list-create/', views.UserListCreate.as_view(), name='userListCreate'),
 ]
+
+urlpatterns += router.urls

@@ -93,6 +93,7 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
                   'birth_date', 'password', 'password2', 'dni']
         extra_kwargs = {
             'password': {'write_only': True},
+            'driver_points': {'read_only': True}
         }
 
     def validate(self, attrs):

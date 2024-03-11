@@ -10,9 +10,9 @@ from .serializers import UserSerializer, DriverSerializer
 from .serializers import UserRegisterSerializer, DriverRegisterSerializer
 
 
-class UserList(generics.ListAPIView):
+class UserListCreate(generics.ListCreateAPIView):
     """
-    The class that will generate a list of all the users
+    The class that will generate a list of all the users and create if needed
 
     Args:
         generics (ListAPIView): This generates a list of users and pass it as json for the response
@@ -23,22 +23,15 @@ class UserList(generics.ListAPIView):
     search_fields = ['username']
     order_fields = ['points', 'created_at', 'updated_at']
 
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return UserRegisterSerializer
+        return super().get_serializer_class()
 
-class UserRegister(generics.CreateAPIView):
+
+class DriverListCreate(generics.ListCreateAPIView):
     """
-    The class that will handle the creation of the users
-
-    Args:
-        generics (CreateAPIView): This instantiates a user and saves it.
-            the response is the instantiated user
-    """
-    queryset = User.objects.all()
-    serializer_class = UserRegisterSerializer
-
-
-class DriverList(generics.ListAPIView):
-    """
-    The class that will generate a list of all the drivers
+    The class that will generate a list of all the drivers and create if needed
 
     Args:
         generics (ListAPIView): This generates a list of users and pass it as json for the response
@@ -49,14 +42,7 @@ class DriverList(generics.ListAPIView):
     search_fields = ['username']
     order_fields = ['driver_points', 'created_at', 'updated_at']
 
-
-class DriverRegister(generics.CreateAPIView):
-    """
-    The class that will handle the creation of the Driver
-
-    Args:
-        generics (CreateAPIView): This instantiates a driver and saves it.
-            the response is the instantiated driver
-    """
-    queryset = Driver.objects.all
-    serializer_class = DriverRegisterSerializer
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return DriverRegisterSerializer
+        return super().get_serializer_class()

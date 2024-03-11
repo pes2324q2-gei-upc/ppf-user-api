@@ -52,11 +52,11 @@ class DriverList(generics.ListAPIView):
 
 class DriverRegister(generics.CreateAPIView):
     """
-    The class that will handle the creation of the users
+    The class that will handle the creation of the Driver
 
     Args:
-        generics (CreateAPIView): This instantiates a user and saves it.
-            the response is the instantiated user
+        generics (CreateAPIView): This instantiates a driver and saves it.
+            the response is the instantiated driver
     """
     queryset = Driver.objects.all
     serializer_class = DriverRegisterSerializer

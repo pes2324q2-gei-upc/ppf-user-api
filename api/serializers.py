@@ -42,6 +42,10 @@ class DriverSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'first_name',
                   'last_name', 'email', 'driver_points']
 
+        extra_kwargs = {
+            'driver_points': {'read_only': True}
+        }
+
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     """

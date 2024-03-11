@@ -21,7 +21,7 @@ from api import views
 
 urlpatterns = [
     path('users/', views.UserList.as_view(), name='userList'),
-    path('users/register', views.UserRegister.as_view(), name='userRegister'),
+    path('users/register/', views.UserRegister.as_view(), name='userRegister'),
     path('drivers/', views.DriverList.as_view(), name='driverList'),
-    path('drivers/register', views.DriverRegister.as_view(), name='driverRegister'),
+    path('drivers/register/', views.DriverRegister.as_view(), name='driverRegister'),
 ]

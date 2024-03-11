@@ -12,4 +12,4 @@ COPY manage.py .
 COPY userApi userApi
 COPY api api
 
-CMD [ "python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD python manage.py runserver

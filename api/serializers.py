@@ -20,6 +20,9 @@ class UserSerializer(serializers.ModelSerializer):
         """
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'points']
+        extra_kwargs = {
+            'points': {'read_only': True},
+        }
 
 
 class DriverSerializer(serializers.ModelSerializer):

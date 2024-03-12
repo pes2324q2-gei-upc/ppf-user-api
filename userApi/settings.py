@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "common",
     'rest_framework',
     "api",
+    "usrLogin",
 ]
 
 MIDDLEWARE = [

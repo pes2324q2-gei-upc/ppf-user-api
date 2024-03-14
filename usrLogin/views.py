@@ -1,29 +1,17 @@
-from rest_framework import generics
+"""
+    This module provides an API endpoint for user login.
+"""
+
+from datetime import timedelta
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
-from .serializers import (
-    User,
-    UserSerializer,
-    TokenSerializer,
-    UserLoginSerializer
-)
 from django.utils import timezone
-from datetime import timedelta
+from .serializers import UserLoginSerializer
 
 # Create your views here.
-
-
-class UserList(generics.ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-
-class TokenList(generics.ListAPIView):
-    queryset = Token.objects.all()
-    serializer_class = TokenSerializer
 
 
 class LoginAPIView(APIView):
@@ -35,6 +23,15 @@ class LoginAPIView(APIView):
     """
 
     def post(self, request):
+        """
+            Handle POST request for user login authentication.
+
+            Parameters:
+            - request: HTTP request object containing user login credentials.
+
+            Returns:
+            - Response: HTTP response object containing a token or error message.
+        """
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
             username = serializer.validated_data.get('username')
@@ -44,18 +41,18 @@ class LoginAPIView(APIView):
             if user:
                 # Find an active token for the user
                 try:
-                    token = Token.objects.get(user=user)
+                    token = Token.objects.get(user=user)    # pylint: disable=no-member
                     # Check if the token has expired
                     if token.created + timedelta(seconds=30) < timezone.now():
                         # If the token has expired, delete it
                         token.delete()
                         token = None
-                except Token.DoesNotExist:
+                except Token.DoesNotExist:  # pylint: disable=no-member
                     token = None
 
                 # If the user does not have an active token, generate a new one
                 if not token:
-                    token = Token.objects.create(user=user)
+                    token = Token.objects.create(user=user) # pylint: disable=no-member
                     token.save()
 
                 return Response({'token': token.key})

@@ -5,7 +5,6 @@ The serializers for the user login
 """
 
 from rest_framework import serializers
-from ppf.common.models.user import User, Token
 
 
 class UserLoginSerializer(serializers.Serializer):
@@ -23,37 +22,3 @@ class UserLoginSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         return
-
-
-class UserSerializer(serializers.ModelSerializer):
-    """
-    Serializer for user login
-
-    Args:
-        serializers (ModelSerializer): basic serializer model
-
-    Returns:
-        _type_: _description_
-    """
-    class Meta:
-        """meta class for user serializer
-        """
-        model = User
-        fields = ['username', 'password']  # Add other fields as needed
-        extra_kwargs = {'password': {'write_only': True}}
-
-    def create(self, validated_data):
-        user = User.objects.create_user(**validated_data)
-        return user
-
-
-class TokenSerializer(serializers.ModelSerializer):
-    """
-    serializer class for the tokens
-    """
-    class Meta:
-        """
-        meta class for the tokens
-        """
-        model = Token
-        fields = '__all__'

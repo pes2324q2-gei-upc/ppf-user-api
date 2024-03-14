@@ -5,10 +5,10 @@
 from datetime import timedelta
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from django.utils import timezone
+from ppf.common.models.user import Token
 from .serializers import UserLoginSerializer
 
 # Create your views here.
@@ -41,7 +41,8 @@ class LoginAPIView(APIView):
             if user:
                 # Find an active token for the user
                 try:
-                    token = Token.objects.get(user=user)    # pylint: disable=no-member
+                    token = Token.objects.get(  # pylint: disable=no-member
+                        user=user)
                     # Check if the token has expired
                     if token.created + timedelta(seconds=30) < timezone.now():
                         # If the token has expired, delete it
@@ -52,7 +53,8 @@ class LoginAPIView(APIView):
 
                 # If the user does not have an active token, generate a new one
                 if not token:
-                    token = Token.objects.create(user=user) # pylint: disable=no-member
+                    token = Token.objects.create(   # pylint: disable=no-member
+                        user=user)
                     token.save()
 
                 return Response({'token': token.key})

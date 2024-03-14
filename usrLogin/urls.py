@@ -20,8 +20,8 @@ from usrLogin import views
 
 urlpatterns = [
     path('', views.UserList.as_view(), name='userList'),
-    path('login/', views.UserRegistrationAPIView.as_view(), name='login'),
-    #path('token-all/', views.TokenList.as_view(), name='TokenList'),
+    path('login/', views.LoginAPIView.as_view(), name='login'),
+    path('tokens/', views.TokenList.as_view(), name='tokenList'),
 
 
 ]

@@ -8,16 +8,15 @@ from rest_framework import serializers
 from ppf.common.models.user import User, Token
 
 
-class UserLoginSerializer(serializers.ModelSerializer):
+class UserLoginSerializer(serializers.Serializer):
     """
-    the serializer for user login
+    Serializer for handling user login data.
+
+    Args:
+        Serializer: Base class for serializers in Django REST Framework.
     """
-    class Meta:
-        """Meta class for user login serializer
-        """
-        model = User
-        fields = ['username', 'password']
-        extra_kwargs = {'password': {'write_only': True}}
+    username = serializers.CharField(max_length=150)
+    password = serializers.CharField(max_length=128, write_only=True)
 
 
 class UserSerializer(serializers.ModelSerializer):

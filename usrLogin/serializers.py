@@ -1,6 +1,11 @@
+"""
+The serializers for the user login
+    Returns:
+        _type_: _description_
+"""
+
 from rest_framework import serializers
-from django.contrib.auth.models import User
-from rest_framework.authtoken.models import Token
+from ppf.common.models.user import User, Token
 
 
 class UserLoginSerializer(serializers.Serializer):
@@ -13,9 +18,26 @@ class UserLoginSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
     password = serializers.CharField(max_length=128, write_only=True)
 
+    def create(self, validated_data):
+        return
+
+    def update(self, instance, validated_data):
+        return
+
 
 class UserSerializer(serializers.ModelSerializer):
+    """
+    Serializer for user login
+
+    Args:
+        serializers (ModelSerializer): basic serializer model
+
+    Returns:
+        _type_: _description_
+    """
     class Meta:
+        """meta class for user serializer
+        """
         model = User
         fields = ['username', 'password']  # Add other fields as needed
         extra_kwargs = {'password': {'write_only': True}}
@@ -26,6 +48,12 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class TokenSerializer(serializers.ModelSerializer):
+    """
+    serializer class for the tokens
+    """
     class Meta:
+        """
+        meta class for the tokens
+        """
         model = Token
         fields = '__all__'

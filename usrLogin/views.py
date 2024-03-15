@@ -32,9 +32,9 @@ class LoginAPIView(APIView):
         """
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
-            username = serializer.validated_data.get('username')
+            email = serializer.validated_data.get('email')
             password = serializer.validated_data.get('password')
-            user = authenticate(username=username, password=password)
+            user = authenticate(email=email, password=password)
 
             if user:
                 # Find an active token for the user

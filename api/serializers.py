@@ -66,12 +66,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         fields = ['username', 'first_name', 'last_name', 'email',
                   'birth_date', 'password', 'password2',]
         extra_kwargs = {
-            'password': {'write_only': True, 'required': True},
-            'username': {'required': True},
-            'first_name': {'required': True},
-            'last_name': {'required': True},
-            'email': {'required': True},
-            'birth_date': {'required': True},
+            'password': {'write_only': True},
+            'points': {'write_only': True},
+
         }
 
     def validate(self, attrs):
@@ -119,11 +116,6 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
                   'birth_date', 'password', 'password2', 'dni', 'capacity']
         extra_kwargs = {
             'password': {'write_only': True, 'required': True},
-            'username': {'required': True},
-            'first_name': {'required': True},
-            'last_name': {'required': True},
-            'email': {'required': True},
-            'birth_date': {'required': True},
             'driver_points': {'read_only': True},
         }
 

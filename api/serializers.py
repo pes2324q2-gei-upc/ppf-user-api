@@ -3,6 +3,7 @@ This document contains all the serializers that will be used by the api
 """
 
 from rest_framework import serializers
+from django.db import models
 from ppf.common.models.user import User, Driver
 
 
@@ -65,12 +66,29 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         fields = ['username', 'first_name', 'last_name', 'email',
                   'birth_date', 'password', 'password2',]
         extra_kwargs = {
-            'password': {'write_only': True},
+            'password': {'write_only': True, 'required': True},
+            'username': {'required': True},
+            'first_name': {'required': True},
+            'last_name': {'required': True},
+            'email': {'required': True},
+            'birth_date': {'required': True},
         }
 
     def validate(self, attrs):
-        if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError("The passwords do not match")
+        password = attrs.get('password')
+        password2 = attrs.get('password2')
+        if password != password2:
+            raise serializers.ValidationError("Passwords must match.")
+
+        for field_name, value in attrs.items():
+            # Check if the field is not a DateField or DateTimeField
+            if not isinstance(value, (models.DateField, models.DateTimeField)):
+                if not isinstance(value, str):
+                    continue  # Skip validation if value is not a string
+
+                if not value.strip():  # Check if value is a blank string
+                    raise serializers.ValidationError(
+                        f"{field_name.capitalize()} cannot be blank.")
         return attrs
 
     def create(self, validated_data):
@@ -100,13 +118,30 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
         fields = ['username', 'first_name', 'last_name', 'email',
                   'birth_date', 'password', 'password2', 'dni', 'capacity']
         extra_kwargs = {
-            'password': {'write_only': True},
-            'driver_points': {'read_only': True}
+            'password': {'write_only': True, 'required': True},
+            'username': {'required': True},
+            'first_name': {'required': True},
+            'last_name': {'required': True},
+            'email': {'required': True},
+            'birth_date': {'required': True},
+            'driver_points': {'read_only': True},
         }
 
     def validate(self, attrs):
-        if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError("The passwords do not match")
+        password = attrs.get('password')
+        password2 = attrs.get('password2')
+        if password != password2:
+            raise serializers.ValidationError("Passwords must match.")
+
+        for field_name, value in attrs.items():
+            # Check if the field is not a DateField or DateTimeField
+            if not isinstance(value, (models.DateField, models.DateTimeField)):
+                if not isinstance(value, str):
+                    continue  # Skip validation if value is not a string
+
+                if not value.strip():  # Check if value is a blank string
+                    raise serializers.ValidationError(
+                        f"{field_name.capitalize()} cannot be blank.")
         return attrs
 
     def create(self, validated_data):

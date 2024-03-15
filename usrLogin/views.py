@@ -42,11 +42,11 @@ class LoginAPIView(APIView):
                     user=user)
                 if token.exists():
                     token = token.delete()
-                else:
-                    # Create a new token for the user
-                    token = Token.objects.create(   # pylint: disable=no-member
-                        user=user)
-                    token.save()
+
+                # Create a new token for the user
+                token = Token.objects.create(   # pylint: disable=no-member
+                    user=user)
+                token.save()
 
                 return Response({'token': token.key})
             # If user not found means that the credentials are invalid or

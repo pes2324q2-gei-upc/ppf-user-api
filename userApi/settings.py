@@ -132,7 +132,12 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'usrLogin.backends.EmailBackend',
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
     ],
 }
+
+AUTHENTICATION_BACKENDS = [
+    'usrLogin.backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]

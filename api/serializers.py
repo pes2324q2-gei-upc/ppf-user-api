@@ -113,7 +113,7 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
         """
         model = Driver
         fields = ['username', 'first_name', 'last_name', 'email',
-                  'birth_date', 'password', 'password2', 'dni', 'capacity']
+                  'birth_date', 'password', 'password2', 'dni', 'autonomy']
         extra_kwargs = {
             'password': {'write_only': True, 'required': True},
             'driver_points': {'read_only': True},

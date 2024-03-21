@@ -13,6 +13,7 @@ class EmailSerializer(serializers.Serializer):
     """
     inquiry = serializers.CharField(max_length=120)
     message = serializers.CharField()
+    email = serializers.ListField(child=serializers.EmailField())
 
     def create(self, validated_data):
         return

@@ -41,12 +41,13 @@ class SendEmailView(APIView):
         if serializer.is_valid():
             inquiry = serializer.validated_data.get('inquiry')
             message = serializer.validated_data.get('message')
+            recipient_emails = serializer.validated_data.get('email')
 
             send_mail(
                 subject=inquiry,
                 message=message,
                 from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[settings.RECIPIENT_ADDRESS]
+                recipient_list=recipient_emails
             )
 
             return Response({"message": "Email sent successfully"}, status=status.HTTP_200_OK)

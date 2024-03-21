@@ -19,9 +19,11 @@ from django.contrib import admin
 from django.urls import include, path
 from api import urls as apiUrls
 from usrLogin import urls as usrLoginUrls
+from emailSending import urls as emailSendingUrls
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include(apiUrls)),
     path("", include(usrLoginUrls)),
+    path("", include(emailSendingUrls)),
 ]

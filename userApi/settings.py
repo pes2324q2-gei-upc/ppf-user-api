@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from pathlib import Path
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -43,6 +44,7 @@ INSTALLED_APPS = [
     "api",
     "usrLogin",
     'drf_yasg',
+    "emailSending",
 ]
 
 MIDDLEWARE = [
@@ -132,6 +134,7 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Authentication settings
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
@@ -142,3 +145,20 @@ AUTHENTICATION_BACKENDS = [
     'usrLogin.backends.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+# Email sending settings
+env = environ.Env()
+current_directory = os.path.dirname(os.path.abspath(__file__))
+env_file_path = os.path.join(current_directory, '..', 'emailSending', '.env')
+env.read_env(env_file=env_file_path)
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+
+# Custom setting. To email
+RECIPIENT_ADDRESS = env('RECIPIENT_ADDRESS')

@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from ppf.common.models.user import Token
 from .serializers import UserLoginSerializer
 
@@ -20,6 +22,29 @@ class LoginAPIView(APIView):
         APIView: Base class for handling HTTP requests.
     """
 
+    @swagger_auto_schema(
+        request_body=UserLoginSerializer,
+        responses={
+            200: openapi.Response(
+                description="Token successfully created or updated",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'token': openapi.Schema(type=openapi.TYPE_STRING)
+                    }
+                )
+            ),
+            401: openapi.Response(
+                description="Unauthorized or invalid credentials",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'error': openapi.Schema(type=openapi.TYPE_STRING)
+                    }
+                )
+            ),
+        },
+    )
     def post(self, request):
         """
             Handle POST request for user login authentication.

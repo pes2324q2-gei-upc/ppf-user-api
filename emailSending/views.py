@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core.mail import send_mail
 from django.conf import settings
+from drf_yasg.utils import swagger_auto_schema
 from .serializers import EmailSerializer
 
 
@@ -17,6 +18,13 @@ class SendEmailView(APIView):
         APIView: Base class for handling HTTP requests.
     """
 
+    @swagger_auto_schema(
+        request_body=EmailSerializer,
+        responses={
+            200: "Email sent successfully",
+            400: "Bad request",
+        },
+    )
     def post(self, request):
         """
             Handle POST request for sending an email.

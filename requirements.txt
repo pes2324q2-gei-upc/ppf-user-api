@@ -1,5 +1,7 @@
 asgiref==3.7.2
 astroid==3.1.0
+black==24.2.0
+click==8.1.7
 cachetools==5.3.3
 certifi==2024.2.2
 charset-normalizer==3.3.2  
@@ -22,9 +24,11 @@ inflection==0.5.1
 iniconfig==2.0.0
 isort==5.13.2
 mccabe==0.7.0
+mypy-extensions==1.0.0
 packaging==24.0
-pep8==1.7.1
+pathspec==0.12.1
 platformdirs==4.2.0
+-e git+https://github.com/pes2324q2-gei-upc/PowerPathFinder.git@07f01b3394765a27e2bbb8be616ae2ffb2600b5a#egg=ppf&subdirectory=ppf
 pluggy==1.4.0
 proto-plus==1.23.0
 protobuf==4.25.3

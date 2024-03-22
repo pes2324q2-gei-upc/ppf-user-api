@@ -5,5 +5,5 @@ from django.urls import path
 from .views import SendEmailView
 
 urlpatterns = [
-    path('sendEmail/', SendEmailView.as_view(), name='sendEmail'),
+    path('', SendEmailView.as_view(), name='sendEmail'),
 ]

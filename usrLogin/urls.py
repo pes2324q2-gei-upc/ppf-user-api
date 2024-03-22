@@ -19,5 +19,5 @@ from usrLogin import views
 
 
 urlpatterns = [
-    path('login/', views.LoginAPIView.as_view(), name='login'),
+    path('', views.LoginAPIView.as_view(), name='login'),
 ]

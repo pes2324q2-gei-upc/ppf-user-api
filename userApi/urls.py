@@ -18,8 +18,31 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from api import urls as apiUrls
+from usrLogin import urls as usrLoginUrls
+from emailSending import urls as emailSendingUrls
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="User API",
+        default_version='v1',
+        description="The users API provides a way to hanlde all about users.",
+        terms_of_service="https://www.example.com/terms/",
+        license=openapi.License(name="Apache 2.0 License")
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", include(apiUrls))
+    path('swagger/', schema_view.with_ui('swagger',
+         cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc',
+         cache_timeout=0), name='schema-redoc'),
+    path("", include(apiUrls)),
+    path("login/", include(usrLoginUrls)),
+    path("sendEmail/", include(emailSendingUrls)),
 ]

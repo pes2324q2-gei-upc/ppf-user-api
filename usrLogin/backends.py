@@ -1,6 +1,7 @@
 """
     Module including the custom authentication backend for the user login.
 """
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 

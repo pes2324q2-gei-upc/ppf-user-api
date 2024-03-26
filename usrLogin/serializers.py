@@ -14,6 +14,7 @@ class UserLoginSerializer(serializers.Serializer):
     Args:
         Serializer: Base class for serializers in Django REST Framework.
     """
+
     email = serializers.EmailField()
     password = serializers.CharField(max_length=128, write_only=True)
 

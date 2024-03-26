@@ -2,13 +2,18 @@
 This file contains all the views to implement the api    
 """
 
-from rest_framework.filters import SearchFilter, OrderingFilter
+from common.models.user import Driver, User
 
 # from rest_framework.views import APIView
 from rest_framework import generics
-from common.models.user import User, Driver
-from .serializers import UserSerializer, DriverSerializer
-from .serializers import UserRegisterSerializer, DriverRegisterSerializer
+from rest_framework.filters import OrderingFilter, SearchFilter
+
+from .serializers import (
+    DriverRegisterSerializer,
+    DriverSerializer,
+    UserRegisterSerializer,
+    UserSerializer,
+)
 
 
 class UserListCreate(generics.ListCreateAPIView):

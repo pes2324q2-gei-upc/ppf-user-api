@@ -5,7 +5,7 @@ This document contains all the serializers that will be used by the api
 from django.db import models
 from rest_framework import serializers
 
-from ppf.common.models.user import Driver, User
+from common.models.user import Driver, User
 
 
 class UserSerializer(serializers.ModelSerializer):

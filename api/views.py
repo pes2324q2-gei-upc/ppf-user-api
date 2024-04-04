@@ -28,7 +28,7 @@ class UserListCreate(generics.ListCreateAPIView):
     serializer_class = UserSerializer
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["username"]
-    order_fields = ["points", "created_at", "updated_at"]
+    order_fields = ["points", "createdAt", "updatedAt"]
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -48,7 +48,7 @@ class DriverListCreate(generics.ListCreateAPIView):
     serializer_class = DriverSerializer
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["username"]
-    order_fields = ["driver_points", "created_at", "updated_at"]
+    order_fields = ["driverPoints", "createdAt", "updatedAt"]
 
     def get_serializer_class(self):
         if self.request.method == "POST":

@@ -185,13 +185,6 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
         validated_data.pop("password2")  # Remove password2 from saving
         password = validated_data.pop("password")
 
-        # De momento para crear cargadores manualmente
-        # charger_mennekes = ChargerType.objects.create(chargerType=ChargerType.MENNEKES)
-        # charger_tesla = ChargerType.objects.create(chargerType=ChargerType.TESLA)
-        # charger_schuko = ChargerType.objects.create(chargerType=ChargerType.SCHUKO)
-        # charger_chademo = ChargerType.objects.create(chargerType=ChargerType.CHADEMO)
-        # charger_css_combo2 = ChargerType.objects.create(chargerType=ChargerType.CSS_COMBO2)
-
         chargerTypesData = validated_data.pop("chargerTypes", None)
 
         driver = Driver.objects.create_user(**validated_data)

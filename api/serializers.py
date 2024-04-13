@@ -5,7 +5,7 @@ This document contains all the serializers that will be used by the api
 from django.db import models
 from rest_framework import serializers
 
-from common.models.user import Driver, User
+from common.models.user import Driver, User, ChargerType
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -27,26 +27,6 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "points": {"read_only": True},
         }
-
-
-class DriverSerializer(serializers.ModelSerializer):
-    """
-    The Driver serializer class
-
-    Args:
-        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
-        and create the JSON
-    """
-
-    class Meta:
-        """
-        The Meta definition for Driver
-        """
-
-        model = Driver
-        fields = ["id", "username", "first_name", "last_name", "email", "driverPoints"]
-
-        extra_kwargs = {"driverPoints": {"read_only": True}}
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -105,6 +85,48 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         return user
 
 
+class ChargerTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChargerType
+        fields = [
+            "chargerType",
+        ]
+
+
+class DriverSerializer(serializers.ModelSerializer):
+    """
+    The Driver serializer class
+
+    Args:
+        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        and create the JSON
+    """
+
+    chargerTypes = ChargerTypeSerializer(many=True)
+
+    class Meta:
+        """
+        The Meta definition for Driver
+        """
+
+        model = Driver
+        fields = [
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "driverPoints",
+            "chargerTypes",
+            "canNotTravelWithPets",
+            "listenToMusic",
+            "noSmoking",
+            "talkTooMuch",
+        ]
+
+        extra_kwargs = {"driverPoints": {"read_only": True}}
+
+
 class DriverRegisterSerializer(serializers.ModelSerializer):
     """
     This is the Serializer for user registration
@@ -132,6 +154,11 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
             "password2",
             "dni",
             "autonomy",
+            "chargerTypes",
+            "canNotTravelWithPets",
+            "listenToMusic",
+            "noSmoking",
+            "talkTooMuch",
         ]
         extra_kwargs = {
             "password": {"write_only": True, "required": True},
@@ -157,7 +184,16 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop("password2")  # Remove password2 from saving
         password = validated_data.pop("password")
+
+        chargerTypesData = validated_data.pop("chargerTypes", None)
+
         driver = Driver.objects.create_user(**validated_data)
         driver.set_password(password)
         driver.save()
+
+        if chargerTypesData:
+            for chargerTypeData in chargerTypesData:
+                chargerType = ChargerType.objects.get(chargerType=chargerTypeData)
+                driver.chargerTypes.add(chargerType)
+
         return driver

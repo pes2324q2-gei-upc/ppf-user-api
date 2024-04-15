@@ -5,7 +5,7 @@ This document contains all the serializers that will be used by the api
 from django.db import models
 from rest_framework import serializers
 
-from common.models.user import Driver, User, ChargerType
+from common.models.user import Driver, User, ChargerType, Preference
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -93,6 +93,12 @@ class ChargerTypeSerializer(serializers.ModelSerializer):
         ]
 
 
+class PreferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Preference
+        fields = "__all__"
+
+
 class DriverSerializer(serializers.ModelSerializer):
     """
     The Driver serializer class
@@ -103,6 +109,7 @@ class DriverSerializer(serializers.ModelSerializer):
     """
 
     chargerTypes = ChargerTypeSerializer(many=True)
+    preference = PreferenceSerializer()
 
     class Meta:
         """
@@ -118,10 +125,7 @@ class DriverSerializer(serializers.ModelSerializer):
             "email",
             "driverPoints",
             "chargerTypes",
-            "canNotTravelWithPets",
-            "listenToMusic",
-            "noSmoking",
-            "talkTooMuch",
+            "preference",
         ]
 
         extra_kwargs = {"driverPoints": {"read_only": True}}
@@ -137,6 +141,7 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
     """
 
     password2 = serializers.CharField(max_length=50, write_only=True)
+    preference = PreferenceSerializer()
 
     class Meta:
         """
@@ -155,10 +160,7 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
             "dni",
             "autonomy",
             "chargerTypes",
-            "canNotTravelWithPets",
-            "listenToMusic",
-            "noSmoking",
-            "talkTooMuch",
+            "preference",
         ]
         extra_kwargs = {
             "password": {"write_only": True, "required": True},
@@ -184,10 +186,12 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop("password2")  # Remove password2 from saving
         password = validated_data.pop("password")
-
+        preferenceData = validated_data.pop("preference")
         chargerTypesData = validated_data.pop("chargerTypes", None)
 
-        driver = Driver.objects.create_user(**validated_data)
+        preference = Preference.objects.create(**preferenceData)
+
+        driver = Driver.objects.create_user(**validated_data, preference=preference)
         driver.set_password(password)
         driver.save()
 

@@ -126,6 +126,7 @@ class DriverSerializer(serializers.ModelSerializer):
             "driverPoints",
             "chargerTypes",
             "preference",
+            "iban",
         ]
 
         extra_kwargs = {"driverPoints": {"read_only": True}}
@@ -161,6 +162,7 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
             "autonomy",
             "chargerTypes",
             "preference",
+            "iban",
         ]
         extra_kwargs = {
             "password": {"write_only": True, "required": True},

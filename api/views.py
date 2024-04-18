@@ -73,7 +73,7 @@ class DriverRetriever(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = DriverSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
-    
+
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
         # Check if the user requesting the action is the same as the user object being retrieved
@@ -104,7 +104,7 @@ class UserRetriever(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
-    
+
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
         # Check if the user requesting the action is the same as the user object being retrieved
@@ -120,7 +120,8 @@ class UserRetriever(generics.RetrieveUpdateDestroyAPIView):
             return Response(data={"error": "You can only update your own user account."},
                             status=status.HTTP_403_FORBIDDEN)
         return super().update(request, *args, **kwargs)
-    
+
+
 class ReportListCreate(generics.ListCreateAPIView):
     """
     The class that will generate a list of all the reports and create if needed
@@ -128,11 +129,12 @@ class ReportListCreate(generics.ListCreateAPIView):
     Args:
         generics (ListAPIView): This generates a list of users and pass it as json for the response
     """
-    
-    queryset=Report.objects.all()
-    serializer_class=ReportSerializer
+
+    queryset = Report.objects.all()
+    serializer_class = ReportSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+
 
 class ReportRetriever(generics.RetrieveUpdateDestroyAPIView):
     """
@@ -147,7 +149,7 @@ class ReportRetriever(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ReportSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
-    
+
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
         # Check if the user requesting the action is the same as the user object being retrieved
@@ -163,3 +165,28 @@ class ReportRetriever(generics.RetrieveUpdateDestroyAPIView):
             return Response(data={"error": "You can only update your own report."},
                             status=status.HTTP_403_FORBIDDEN)
         return super().update(request, *args, **kwargs)
+
+
+class UserIdRetriever(generics.GenericAPIView):
+    """
+    The class for retrieving the user id from the request
+
+    Args:
+        generics (GenericAPIView): Generic view for retrieving the user id.
+    """
+
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        """
+        Retrieves the user id from the request.
+
+        Args:
+            request (HttpRequest): The request object
+
+        Returns:
+            Response: The user id
+        """
+        user_id = request.user.id
+        return Response(data={"user_id": user_id}, status=status.HTTP_200_OK)

@@ -23,4 +23,7 @@ urlpatterns = [
     path("drivers/", views.DriverListCreate.as_view(), name="driverListCreate"),
     path("drivers/<int:pk>/", views.DriverRetriever.as_view(), name="driverRetriever"),
     path("users/<int:pk>/", views.UserRetriever.as_view(), name="userRetriever"),
+    path("valuate/", views.ValuationListCreate.as_view(), name="valuationListCreate"),
+    path("myValuations/", views.MyValuationList.as_view(), name="myValuationList"),
+    path("user/<int:pk>/valuations/", views.UserValuationList.as_view(), name="userValuationList"),
 ]

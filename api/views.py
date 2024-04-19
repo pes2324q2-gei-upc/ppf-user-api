@@ -2,17 +2,23 @@
 This file contains all the views to implement the api    
 """
 
-from common.models.user import Driver, User
+from django.shortcuts import get_object_or_404
+from common.models.user import Driver, User, Valuation
+from django.db.models import Q
 
 # from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 from .serializers import (
     DriverRegisterSerializer,
     DriverSerializer,
     UserRegisterSerializer,
     UserSerializer,
+    ValuationSerializer,
+    ValuationRegisterSerializer,
 )
 
 
@@ -81,3 +87,58 @@ class UserRetriever(generics.RetrieveUpdateDestroyAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+
+class ValuationListCreate(generics.ListCreateAPIView):
+    """
+    The class that will generate a list of all the valuations and create if needed
+
+    Args:
+        generics (ListAPIView): This generates a list of users and pass it as json for the response
+    """
+
+    queryset = Valuation.objects.all()
+    serializer_class = ValuationSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return ValuationRegisterSerializer
+        return super().get_serializer_class()
+
+    def perform_create(self, serializer):
+        serializer.save(giver=self.request.user)
+
+
+class MyValuationList(generics.ListAPIView):
+    """
+    The class that will generate all the valuations of the user logged in
+
+    Args:
+        generics (ListAPIView): This generates a list of users and pass it as json for the response
+    """
+
+    serializer_class = ValuationSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Valuation.objects.filter(Q(giver=self.request.user) | Q(receiver=self.request.user))
+
+
+class UserValuationList(generics.ListAPIView):
+    """
+    The class that will generate all the valuations of a user
+
+    Args:
+        generics (ListAPIView): This generates a list of users and pass it as json for the response
+    """
+
+    serializer_class = ValuationSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = get_object_or_404(User, pk=self.kwargs["user_id"])
+        return Valuation.objects.filter(Q(giver=user) | Q(receiver=user))

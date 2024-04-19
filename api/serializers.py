@@ -5,7 +5,7 @@ This document contains all the serializers that will be used by the api
 from django.db import models
 from rest_framework import serializers
 
-from common.models.user import Driver, User, ChargerType, Preference
+from common.models.user import Driver, User, ChargerType, Preference, Valuation
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -203,3 +203,44 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
                 driver.chargerTypes.add(chargerType)
 
         return driver
+
+
+class ValuationSerializer(serializers.ModelSerializer):
+    """
+    The Valuation serializer class
+
+    Args:
+        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        and create the JSON
+    """
+
+    class Meta:
+        """
+        The Meta definition for Valuation
+        """
+
+        model = Valuation
+        fields = ["id", "giver", "receiver", "rating", "comment"]
+
+
+class ValuationRegisterSerializer(serializers.ModelSerializer):
+    """
+    This is the Serializer for valuation creation
+
+    Args:
+        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        and create the JSON
+    """
+
+    class Meta:
+        model = Valuation
+        fields = ["receiver", "route", "rating", "comment"]
+        extra_kwargs = {
+            "comment": {"required": False},
+        }
+
+    def validate(self, attrs):
+        if attrs["receiver"] == self.context["request"].user:
+            raise serializers.ValidationError("You cannot value yourself.")
+        
+        return attrs

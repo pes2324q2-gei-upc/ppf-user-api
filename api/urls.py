@@ -21,6 +21,9 @@ from django.urls import path
 urlpatterns = [
     path("users/", views.UserListCreate.as_view(), name="userListCreate"),
     path("drivers/", views.DriverListCreate.as_view(), name="driverListCreate"),
-    path("drivers/<int:pk>/", views.DriverRetriever.as_view(), name="driverRetriever"),
+    path("drivers/<int:pk>/", views.DriverRetriever.as_view(),
+         name="driverRetriever"),
     path("users/<int:pk>/", views.UserRetriever.as_view(), name="userRetriever"),
+    path("users/<int:pk>/profile",
+         views.TestUserProfileView, name="userProfile"),
 ]

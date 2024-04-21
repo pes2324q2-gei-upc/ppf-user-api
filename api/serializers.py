@@ -7,6 +7,7 @@ from rest_framework import serializers
 
 from common.models.user import Driver, User, ChargerType, Preference
 from common.models.valuation import Valuation
+from common.models.route import Route
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -246,13 +247,21 @@ class ValuationRegisterSerializer(serializers.ModelSerializer):
 
         if receiver.pk == giver.pk:
             raise serializers.ValidationError("You cannot value yourself.")
-        
+
         route_id = attrs["route"].pk
-        if not receiver.driver.routes.filter(pk=route_id).exists():
+        if not (
+            Route.objects.filter(driver=receiver, pk=route_id).exists()
+            or
+            Route.objects.filter(passengers=receiver, pk=route_id).exists()
+        ):
             raise serializers.ValidationError("The receiver is not part of the route.")
-        
+
         # The giver, i.e the authificated user, belongs to the route
-        if not giver.driver.routes.filter(pk=route_id).exists():
-            raise serializers.ValidationError("You are not part of the route.")
+        if not (
+            Route.objects.filter(driver=giver, pk=route_id).exists()
+            or
+            Route.objects.filter(passengers=giver, pk=route_id).exists()
+        ):
+            raise serializers.ValidationError("The giver is not part of the route.")
 
         return attrs

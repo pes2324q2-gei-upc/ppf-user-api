@@ -24,6 +24,4 @@ urlpatterns = [
     path("drivers/<int:pk>/", views.DriverRetriever.as_view(),
          name="driverRetriever"),
     path("users/<int:pk>/", views.UserRetriever.as_view(), name="userRetriever"),
-    path("users/<int:pk>/profile",
-         views.TestUserProfileView, name="userProfile"),
 ]

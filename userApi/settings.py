@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from pathlib import Path
+from storages.backends.s3boto3 import S3Boto3Storage
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,6 +46,11 @@ INSTALLED_APPS = [
     "usrLogin",
     "drf_yasg",
     "emailSending",
+
+    # S3
+    "storages",
+    "boto3",
+    "PIL",
 ]
 
 MIDDLEWARE = [
@@ -62,7 +68,7 @@ ROOT_URLCONF = "userApi.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -153,3 +159,49 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+
+# AWS S3 settings
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = 'bucket-ppf'
+AWS_S3_REGION_NAME = 'eu-west-2'
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+AWS_S3_FILE_OVERWRITE = False
+
+# Storage
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
+
+# Media files
+
+class MediaStorage(S3Boto3Storage):
+    location = "profile_image"  # Path in Bucket to save media files
+    file_overwrite = False
+
+
+# CSS and JS files
+class StaticStorage(S3Boto3Storage):
+    location = "static"  # Path in Bucket to static media files
+    file_overwrite = False
+
+
+# Use S3 as the default file storage
+DEFAULT_FILE_STORAGE = "userApi.settings.MediaStorage"
+
+# Use S3 for storing static files
+# STATICFILES_STORAGE = "userApi.settings.StaticStorage"
+
+
+# Storage
+# STORAGES = {
+#
+#     # Media files
+#     "default": {
+#         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+#     },
+#
+#     # CSS and JS files
+#     "staticfiles": {
+#         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+#     },
+# }

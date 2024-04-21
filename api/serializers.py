@@ -16,6 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
         serializers (ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
+    profileImage = serializers.ImageField(use_url=True, required=False)
 
     class Meta:
         """
@@ -23,7 +24,8 @@ class UserSerializer(serializers.ModelSerializer):
         """
 
         model = User
-        fields = ["id", "username", "first_name", "last_name", "email", "points"]
+        fields = ["id", "username", "first_name",
+                  "last_name", "email", "points", "profileImage"]
         extra_kwargs = {
             "points": {"read_only": True},
         }
@@ -73,7 +75,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
                     continue  # Skip validation if value is not a string
 
                 if not value.strip():  # Check if value is a blank string
-                    raise serializers.ValidationError(f"{field_name.capitalize()} cannot be blank.")
+                    raise serializers.ValidationError(
+                        f"{field_name.capitalize()} cannot be blank.")
         return attrs
 
     def create(self, validated_data):
@@ -107,7 +110,7 @@ class DriverSerializer(serializers.ModelSerializer):
         serializers (ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
-
+    profileImage = serializers.ImageField(use_url=True, required=False)
     chargerTypes = ChargerTypeSerializer(many=True)
     preference = PreferenceSerializer()
 
@@ -127,6 +130,7 @@ class DriverSerializer(serializers.ModelSerializer):
             "chargerTypes",
             "preference",
             "iban",
+            "profileImage",
         ]
 
         extra_kwargs = {"driverPoints": {"read_only": True}}
@@ -182,7 +186,8 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
                     continue  # Skip validation if value is not a string
 
                 if not value.strip():  # Check if value is a blank string
-                    raise serializers.ValidationError(f"{field_name.capitalize()} cannot be blank.")
+                    raise serializers.ValidationError(
+                        f"{field_name.capitalize()} cannot be blank.")
         return attrs
 
     def create(self, validated_data):
@@ -193,13 +198,15 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
 
         preference = Preference.objects.create(**preferenceData)
 
-        driver = Driver.objects.create_user(**validated_data, preference=preference)
+        driver = Driver.objects.create_user(
+            **validated_data, preference=preference)
         driver.set_password(password)
         driver.save()
 
         if chargerTypesData:
             for chargerTypeData in chargerTypesData:
-                chargerType = ChargerType.objects.get(chargerType=chargerTypeData)
+                chargerType = ChargerType.objects.get(
+                    chargerType=chargerTypeData)
                 driver.chargerTypes.add(chargerType)
 
         return driver

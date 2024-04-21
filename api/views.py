@@ -4,7 +4,6 @@ This file contains all the views to implement the api
 
 from urllib import request
 
-from django.shortcuts import render
 from common.models import user
 from common.models.user import Driver, User
 
@@ -85,8 +84,3 @@ class UserRetriever(generics.RetrieveUpdateDestroyAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
-
-
-def TestUserProfileView(request, user_id):
-    user = User.objects.get(id=user_id)
-    return render(request, "s3_userimg_test.html", {"user": user})

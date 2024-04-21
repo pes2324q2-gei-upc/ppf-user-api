@@ -241,7 +241,18 @@ class ValuationRegisterSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, attrs):
-        if attrs["receiver"] == self.context["request"].user:
+        receiver = attrs["receiver"]
+        giver = self.context["request"].user
+
+        if receiver.pk == giver.pk:
             raise serializers.ValidationError("You cannot value yourself.")
         
+        route_id = attrs["route"].pk
+        if not receiver.driver.routes.filter(pk=route_id).exists():
+            raise serializers.ValidationError("The receiver is not part of the route.")
+        
+        # The giver, i.e the authificated user, belongs to the route
+        if not giver.driver.routes.filter(pk=route_id).exists():
+            raise serializers.ValidationError("You are not part of the route.")
+
         return attrs

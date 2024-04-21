@@ -2,7 +2,9 @@
 This file contains all the views to implement the api    
 """
 
+from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
+from django.db import IntegrityError
 from common.models.user import Driver, User
 from common.models.valuation import Valuation
 
@@ -107,7 +109,10 @@ class ValuationListCreate(generics.ListCreateAPIView):
         return super().get_serializer_class()
 
     def perform_create(self, serializer):
-        serializer.save(giver=self.request.user)
+        try:
+            serializer.save(giver_id=self.request.user.id)  # type: ignore
+        except IntegrityError as e:
+            raise ValidationError({"error": str(e)})
 
 
 class MyValuationList(generics.ListAPIView):

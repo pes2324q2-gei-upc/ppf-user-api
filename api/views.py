@@ -33,7 +33,7 @@ class UserListCreate(generics.ListCreateAPIView):
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["username"]
     order_fields = ["points", "createdAt", "updatedAt"]
-    parser_classes = (FormParser, MultiPartParser)
+    # parser_classes = (FormParser, MultiPartParser)
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -86,4 +86,4 @@ class UserRetriever(generics.RetrieveUpdateDestroyAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    parser_classes = (FormParser, MultiPartParser)
+    # parser_classes = (FormParser, MultiPartParser)

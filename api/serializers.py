@@ -16,7 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
         serializers (ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
-    profileImage = serializers.ImageField(use_url=True, required=False)
+    # profileImage = serializers.ImageField(use_url=True, required=False)
 
     class Meta:
         """
@@ -41,7 +41,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     """
 
     password2 = serializers.CharField(max_length=50, write_only=True)
-    profileImage = serializers.ImageField(use_url=True)
+    # profileImage = serializers.ImageField(use_url=True)
 
     class Meta:
         """
@@ -112,7 +112,7 @@ class DriverSerializer(serializers.ModelSerializer):
         serializers (ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
-    profileImage = serializers.ImageField(use_url=True, required=False)
+
     chargerTypes = ChargerTypeSerializer(many=True)
     preference = PreferenceSerializer()
 
@@ -132,7 +132,6 @@ class DriverSerializer(serializers.ModelSerializer):
             "chargerTypes",
             "preference",
             "iban",
-            "profileImage",
         ]
 
         extra_kwargs = {"driverPoints": {"read_only": True}}
@@ -149,7 +148,6 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
 
     password2 = serializers.CharField(max_length=50, write_only=True)
     preference = PreferenceSerializer()
-    profileImage = serializers.ImageField(use_url=True, required=False)
 
     class Meta:
         """
@@ -170,7 +168,6 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
             "chargerTypes",
             "preference",
             "iban",
-            "profileImage",
         ]
         extra_kwargs = {
             "password": {"write_only": True, "required": True},

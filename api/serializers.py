@@ -251,17 +251,22 @@ class ValuationRegisterSerializer(serializers.ModelSerializer):
         route_id = attrs["route"].pk
         if not (
             Route.objects.filter(driver=receiver, pk=route_id).exists()
-            or
-            Route.objects.filter(passengers=receiver, pk=route_id).exists()
+            or Route.objects.filter(passengers=receiver, pk=route_id).exists()
         ):
             raise serializers.ValidationError("The receiver is not part of the route.")
 
         # The giver, i.e the authificated user, belongs to the route
         if not (
             Route.objects.filter(driver=giver, pk=route_id).exists()
-            or
-            Route.objects.filter(passengers=giver, pk=route_id).exists()
+            or Route.objects.filter(passengers=giver, pk=route_id).exists()
         ):
             raise serializers.ValidationError("The giver is not part of the route.")
 
+        if (
+            Route.objects.filter(passengers=giver, pk=route_id).exists()
+            and
+            not Route.objects.filter(passengers=receiver, pk=route_id).exists()
+        ):
+            raise serializers.ValidationError("A passenger cannot value other passengers.")
+        
         return attrs

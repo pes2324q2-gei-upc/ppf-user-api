@@ -3,10 +3,9 @@ This file contains all the views to implement the api
 """
 
 from django.shortcuts import get_object_or_404
-from common.models.user import Driver, User, Valuation
-from django.db.models import Q
+from common.models.user import Driver, User
+from common.models.valuation import Valuation
 
-# from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.authentication import TokenAuthentication
@@ -124,7 +123,7 @@ class MyValuationList(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Valuation.objects.filter(Q(giver=self.request.user) | Q(receiver=self.request.user))
+        return Valuation.objects.filter(receiver=self.request.user)
 
 
 class UserValuationList(generics.ListAPIView):
@@ -141,4 +140,4 @@ class UserValuationList(generics.ListAPIView):
 
     def get_queryset(self):
         user = get_object_or_404(User, pk=self.kwargs["user_id"])
-        return Valuation.objects.filter(Q(giver=user) | Q(receiver=user))
+        return Valuation.objects.filter(receiver=user)

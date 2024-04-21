@@ -5,7 +5,8 @@ This document contains all the serializers that will be used by the api
 from django.db import models
 from rest_framework import serializers
 
-from common.models.user import Driver, User, ChargerType, Preference, Valuation
+from common.models.user import Driver, User, ChargerType, Preference
+from common.models.valuation import Valuation
 
 
 class UserSerializer(serializers.ModelSerializer):

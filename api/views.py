@@ -9,6 +9,7 @@ from common.models.user import Driver, User
 
 # from rest_framework.views import APIView
 from rest_framework import generics
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.filters import OrderingFilter, SearchFilter
 
 from .serializers import (
@@ -32,6 +33,7 @@ class UserListCreate(generics.ListCreateAPIView):
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["username"]
     order_fields = ["points", "createdAt", "updatedAt"]
+    parser_classes = (FormParser, MultiPartParser)
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -84,3 +86,4 @@ class UserRetriever(generics.RetrieveUpdateDestroyAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    parser_classes = (FormParser, MultiPartParser)

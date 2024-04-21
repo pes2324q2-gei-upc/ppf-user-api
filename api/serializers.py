@@ -41,6 +41,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     """
 
     password2 = serializers.CharField(max_length=50, write_only=True)
+    profileImage = serializers.ImageField(use_url=True)
 
     class Meta:
         """
@@ -56,6 +57,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "birthDate",
             "password",
             "password2",
+            "profileImage",
         ]
         extra_kwargs = {
             "password": {"write_only": True},
@@ -147,6 +149,7 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
 
     password2 = serializers.CharField(max_length=50, write_only=True)
     preference = PreferenceSerializer()
+    profileImage = serializers.ImageField(use_url=True, required=False)
 
     class Meta:
         """
@@ -167,6 +170,7 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
             "chargerTypes",
             "preference",
             "iban",
+            "profileImage",
         ]
         extra_kwargs = {
             "password": {"write_only": True, "required": True},

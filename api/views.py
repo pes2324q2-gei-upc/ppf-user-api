@@ -13,6 +13,8 @@ from .serializers import (
     DriverSerializer,
     UserRegisterSerializer,
     UserSerializer,
+    UserUpdateSerializer,
+    DriverUpdateSerializer,
 )
 
 
@@ -68,6 +70,11 @@ class DriverRetriever(generics.RetrieveUpdateDestroyAPIView):
     queryset = Driver.objects.all()
     serializer_class = DriverSerializer
 
+    def get_serializer_class(self):
+        if self.request.method == "PUT" or self.request.method == "PATCH":
+            return DriverUpdateSerializer
+        return super().get_serializer_class()
+
 
 class UserRetriever(generics.RetrieveUpdateDestroyAPIView):
     """
@@ -81,3 +88,8 @@ class UserRetriever(generics.RetrieveUpdateDestroyAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == "PUT" or self.request.method == "PATCH":
+            return UserUpdateSerializer
+        return super().get_serializer_class()

@@ -5,7 +5,9 @@ This document contains all the serializers that will be used by the api
 from django.db import models
 from rest_framework import serializers
 
-from common.models.user import Driver, User, ChargerType, Preference
+
+from common.models.user import Driver, User, ChargerType, Preference, Report
+
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -203,3 +205,28 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
                 driver.chargerTypes.add(chargerType)
 
         return driver
+    
+class ReportSerializer(serializers.ModelSerializer):
+    """
+    The reports serializer
+
+    Args:
+        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        and create the JSON
+    """
+    
+    class Meta:
+        """
+        The Meta definition for report
+        """
+        model=Report
+        fields='__all__'
+        read_only_fields = ['reporter']  # Set reporter field as read-only
+        
+    def create(self, validated_data):
+        """
+        Override the create method to automatically fill the reporter field with the authenticated user.
+        """
+        request = self.context.get('request')
+        validated_data['reporter'] = User.objects.all().filter(pk=request.user.id).first() # type: ignore
+        return super().create(validated_data)

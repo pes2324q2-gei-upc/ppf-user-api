@@ -2,7 +2,6 @@
 This document contains all the serializers that will be used by the api
 """
 
-from pickletools import read_uint1
 from django.db import models
 from rest_framework import serializers
 

@@ -19,16 +19,61 @@ class UserSerializer(serializers.ModelSerializer):
         and create the JSON
     """
 
+    password2 = serializers.CharField(max_length=50, write_only=True, required=False)
+
     class Meta:
         """
         The Meta definition for user
         """
 
         model = User
-        fields = ["id", "username", "first_name", "last_name", "email", "points"]
+        fields = [
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "points",
+            "password",
+            "password2",
+            "birthDate",
+        ]
         extra_kwargs = {
             "points": {"read_only": True},
+            "email": {"read_only": True},
+            "password": {
+                "write_only": True,
+                "required": False,
+            },
+            "password2": {
+                "write_only": True,
+                "required": False,
+            },
+            "username": {"required": False},
+            "birthDate": {"required": False},
         }
+
+    def validate(self, attrs):
+        password = attrs.get("password", None)
+        password2 = attrs.get("password2", None)
+        if password and not password2:
+            raise serializers.ValidationError(
+                {"password2": "This field is required when you fill the password."}
+            )
+        if password2 and not password:
+            raise serializers.ValidationError(
+                {"password": "This field is required when you fill the password2."}
+            )
+        if password != password2:
+            raise serializers.ValidationError({"password": "Passwords must match."})
+
+        return super().validate(attrs)
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop("password", None)
+        if password:
+            instance.set_password(password)
+        return super().update(instance, validated_data)
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -90,9 +135,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 class ChargerTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChargerType
-        fields = [
-            "chargerType",
-        ]
+        fields = "__all__"
 
 
 class PreferenceSerializer(serializers.ModelSerializer):
@@ -101,7 +144,7 @@ class PreferenceSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class DriverSerializer(serializers.ModelSerializer):
+class DriverSerializer(UserSerializer):
     """
     The Driver serializer class
 
@@ -110,8 +153,7 @@ class DriverSerializer(serializers.ModelSerializer):
         and create the JSON
     """
 
-    chargerTypes = ChargerTypeSerializer(many=True)
-    preference = PreferenceSerializer()
+    preference = PreferenceSerializer(required=False)
 
     class Meta:
         """
@@ -119,19 +161,48 @@ class DriverSerializer(serializers.ModelSerializer):
         """
 
         model = Driver
-        fields = [
-            "id",
-            "username",
-            "first_name",
-            "last_name",
-            "email",
+        fields = UserSerializer.Meta.fields + [
             "driverPoints",
+            "autonomy",
             "chargerTypes",
             "preference",
             "iban",
         ]
 
-        extra_kwargs = {"driverPoints": {"read_only": True}}
+        extra_kwargs = UserSerializer.Meta.extra_kwargs.copy()
+        extra_kwargs.update(
+            {
+                "chargerTypes": {"required": False},
+                "driverPoints": {"read_only": True},
+            }
+        )
+
+    def validate(self, attrs):
+        return super().validate(attrs)
+
+    def update(self, instance, validated_data):
+        chargerTypesData = validated_data.pop("chargerTypes", None)
+        if chargerTypesData is not None:
+            # Delete all the previous relations
+            instance.chargerTypes.clear()
+            # Add new relations
+            for chargerTypeData in chargerTypesData:
+                chargerType = ChargerType.objects.get(chargerType=chargerTypeData)
+                instance.chargerTypes.add(chargerType)
+
+        preferenceData = validated_data.pop("preference", None)
+        if preferenceData is not None:
+            # Update preference fields
+            preference = instance.preference
+            preference.canNotTravelWithPets = preferenceData.get(
+                "canNotTravelWithPets", preference.canNotTravelWithPets
+            )
+            preference.listenToMusic = preferenceData.get("listenToMusic", preference.listenToMusic)
+            preference.noSmoking = preferenceData.get("noSmoking", preference.noSmoking)
+            preference.talkTooMuch = preferenceData.get("talkTooMuch", preference.talkTooMuch)
+            preference.save()
+
+        return super().update(instance, validated_data)
 
 
 class DriverRegisterSerializer(serializers.ModelSerializer):

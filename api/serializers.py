@@ -388,12 +388,15 @@ class ValuationRegisterSerializer(serializers.ModelSerializer):
         comment = validated_data.get("comment")
         giver_id = self.context["request"].user.id
 
-        valuation = Valuation.objects.create(
-            giver_id=giver_id,
-            receiver_id=receiver_id,
-            route=route,
-            rating=rating,
-            comment=comment,
-        )
+        try:
+            valuation = Valuation.objects.create(
+                giver_id=giver_id,
+                receiver_id=receiver_id,
+                route=route,
+                rating=rating,
+                comment=comment,
+            )
+        except Exception as e:
+            raise serializers.ValidationError({"error": str(e)})
 
         return valuation

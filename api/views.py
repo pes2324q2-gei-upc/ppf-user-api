@@ -2,6 +2,7 @@
 This file contains all the views to implement the api    
 """
 
+from re import M
 from urllib import request
 
 from common.models import user
@@ -14,6 +15,7 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
 
 from .serializers import (
     DriverRegisterSerializer,
@@ -37,7 +39,7 @@ class UserListCreate(generics.ListCreateAPIView):
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["username"]
     order_fields = ["points", "createdAt", "updatedAt"]
-    # parser_classes = (FormParser, MultiPartParser)
+    parser_classes = [MultiPartParser, FormParser]
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -111,6 +113,7 @@ class UserRetriever(generics.RetrieveUpdateDestroyAPIView):
 
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()

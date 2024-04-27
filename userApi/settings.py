@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+from storages.backends.s3boto3 import S3Boto3Storage
 import os
 from pathlib import Path
 from storages.backends.s3boto3 import S3Boto3Storage
@@ -166,20 +167,18 @@ SWAGGER_SETTINGS = {
     },
 }
 
-# AWS S3 settings
+# S3 settings
+
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 AWS_STORAGE_BUCKET_NAME = 'bucket-ppf'
 AWS_S3_REGION_NAME = 'eu-west-2'
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
 AWS_S3_FILE_OVERWRITE = False
 
-# Storage
-DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-
 
 # Media files
-
 class MediaStorage(S3Boto3Storage):
     location = "profile_image"  # Path in Bucket to save media files
     file_overwrite = False
@@ -196,18 +195,3 @@ DEFAULT_FILE_STORAGE = "userApi.settings.MediaStorage"
 
 # Use S3 for storing static files
 # STATICFILES_STORAGE = "userApi.settings.StaticStorage"
-
-
-# Storage
-# STORAGES = {
-#
-#     # Media files
-#     "default": {
-#         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-#     },
-#
-#     # CSS and JS files
-#     "staticfiles": {
-#         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-#     },
-# }

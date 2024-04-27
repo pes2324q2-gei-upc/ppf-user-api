@@ -20,7 +20,6 @@ class UserSerializer(serializers.ModelSerializer):
 
     password2 = serializers.CharField(
         max_length=50, write_only=True, required=False)
-    # profileImage = serializers.ImageField(use_url=True, required=False)
 
     class Meta:
         """

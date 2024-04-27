@@ -2,6 +2,8 @@
 This document contains all the serializers that will be used by the api
 """
 
+import re
+from urllib import request
 from django.db import models
 from rest_framework import serializers
 
@@ -278,7 +280,8 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
                 driver.chargerTypes.add(chargerType)
 
         return driver
-    
+
+
 class ReportSerializer(serializers.ModelSerializer):
     """
     The reports serializer
@@ -287,21 +290,22 @@ class ReportSerializer(serializers.ModelSerializer):
         serializers (ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
-    
+
     class Meta:
         """
         The Meta definition for report
         """
-        model=Report
-        fields='__all__'
-        read_only_fields = ['reporter']  # Set reporter field as read-only
-        
+
+        model = Report
+        fields = "__all__"
+        read_only_fields = ["reporter"]  # Set reporter field as read-only
+
     def create(self, validated_data):
         """
         Override the create method to automatically fill the reporter field with the authenticated user.
         """
-        request = self.context.get('request')
-        validated_data['reporter'] = User.objects.all().filter(pk=request.user.id).first() # type: ignore
+        request = self.context.get("request")
+        validated_data["reporter"] = User.objects.all().filter(pk=request.user.id).first()  # type: ignore
         return super().create(validated_data)
 
 
@@ -332,6 +336,8 @@ class ValuationRegisterSerializer(serializers.ModelSerializer):
         and create the JSON
     """
 
+    receiver = serializers.IntegerField(source="receiver.id")
+
     class Meta:
         model = Valuation
         fields = ["receiver", "route", "rating", "comment"]
@@ -340,31 +346,54 @@ class ValuationRegisterSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, attrs):
-        receiver = attrs["receiver"]
+        receiverId = attrs.get("receiver").get("id")
         giver = self.context["request"].user
 
+        if not User.objects.filter(pk=receiverId).exists():
+            raise serializers.ValidationError({"error": "Invalid receiver ID. User not found."})
+
+        receiver = User.objects.get(pk=receiverId)
+
         if receiver.pk == giver.pk:
-            raise serializers.ValidationError("You cannot value yourself.")
+            raise serializers.ValidationError({"error": "You cannot rate yourself."})
 
         route_id = attrs["route"].pk
         if not (
             Route.objects.filter(driver=receiver, pk=route_id).exists()
             or Route.objects.filter(passengers=receiver, pk=route_id).exists()
         ):
-            raise serializers.ValidationError("The receiver is not part of the route.")
+            raise serializers.ValidationError({"error": "The receiver is not part of the route."})
 
         # The giver, i.e the authificated user, belongs to the route
         if not (
             Route.objects.filter(driver=giver, pk=route_id).exists()
             or Route.objects.filter(passengers=giver, pk=route_id).exists()
         ):
-            raise serializers.ValidationError("The giver is not part of the route.")
+            raise serializers.ValidationError({"error": "The giver is not part of the route."})
 
         if (
             Route.objects.filter(passengers=giver, pk=route_id).exists()
-            and
-            not Route.objects.filter(passengers=receiver, pk=route_id).exists()
+            and not Route.objects.filter(passengers=receiver, pk=route_id).exists()
         ):
-            raise serializers.ValidationError("A passenger cannot value other passengers.")
-        
+            raise serializers.ValidationError(
+                {"error": "A passenger cannot value other passengers."}
+            )
+
         return attrs
+
+    def create(self, validated_data):
+        receiver_id = validated_data.get("receiver").get("id")
+        route = validated_data.get("route")
+        rating = validated_data.get("rating")
+        comment = validated_data.get("comment")
+        giver_id = self.context["request"].user.id
+
+        valuation = Valuation.objects.create(
+            giver_id=giver_id,
+            receiver_id=receiver_id,
+            route=route,
+            rating=rating,
+            comment=comment,
+        )
+
+        return valuation

@@ -84,16 +84,20 @@ class DriverRetriever(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         # Check if the user requesting the action is the same as the user object being retrieved
         if instance.id != request.user.id:
-            return Response(data={"error": "You can only delete your own user account."},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                data={"error": "You can only delete your own user account."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         return super().delete(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         # Check if the user requesting the action is the same as the user object being retrieved
         if instance.id != request.user.id:
-            return Response(data={"error": "You can only update your own user account."},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                data={"error": "You can only update your own user account."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         return super().update(request, *args, **kwargs)
 
 
@@ -115,16 +119,20 @@ class UserRetriever(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         # Check if the user requesting the action is the same as the user object being retrieved
         if instance.id != request.user.id:
-            return Response(data={"error": "You can only delete your own user account."},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                data={"error": "You can only delete your own user account."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         return super().delete(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         # Check if the user requesting the action is the same as the user object being retrieved
         if instance.id != request.user.id:
-            return Response(data={"error": "You can only update your own user account."},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                data={"error": "You can only update your own user account."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         return super().update(request, *args, **kwargs)
 
 
@@ -160,16 +168,20 @@ class ReportRetriever(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         # Check if the user requesting the action is the same as the user object being retrieved
         if instance.reporter.id != request.user.id:
-            return Response(data={"error": "You can only delete your own report."},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                data={"error": "You can only delete your own report."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         return super().delete(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         # Check if the user requesting the action is the same as the user object being retrieved
         if instance.reporter.id != request.user.id:
-            return Response(data={"error": "You can only update your own report."},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                data={"error": "You can only update your own report."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         return super().update(request, *args, **kwargs)
 
 
@@ -198,7 +210,7 @@ class UserIdRetriever(generics.GenericAPIView):
         return Response(data={"user_id": user_id}, status=status.HTTP_200_OK)
 
 
-class ValuationListCreate(generics.ListCreateAPIView):
+class ValuationListCreate(generics.CreateAPIView):
     """
     The class that will generate a list of all the valuations and create if needed
 
@@ -207,20 +219,9 @@ class ValuationListCreate(generics.ListCreateAPIView):
     """
 
     queryset = Valuation.objects.all()
-    serializer_class = ValuationSerializer
+    serializer_class = ValuationRegisterSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
-
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return ValuationRegisterSerializer
-        return super().get_serializer_class()
-
-    def perform_create(self, serializer):
-        try:
-            serializer.save(giver_id=self.request.user.id)  # type: ignore
-        except IntegrityError as e:
-            raise ValidationError({"error": str(e)})
 
 
 class MyValuationList(generics.ListAPIView):

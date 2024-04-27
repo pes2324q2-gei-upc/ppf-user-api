@@ -21,8 +21,13 @@ from django.urls import path
 urlpatterns = [
     path("users/", views.UserListCreate.as_view(), name="userListCreate"),
     path("drivers/", views.DriverListCreate.as_view(), name="driverListCreate"),
-    path("drivers/<int:pk>/", views.DriverRetriever.as_view(), name="driverRetriever"),
+    path("drivers/<int:pk>/", views.DriverRetriever.as_view(),
+         name="driverRetriever"),
     path("users/<int:pk>/", views.UserRetriever.as_view(), name="userRetriever"),
+    path("reports/", views.ReportListCreate.as_view(), name="reportListCreate"),
+    path("reports/<int:pk>/", views.ReportRetriever.as_view(),
+         name="reportRetriever"),
+    path("users/self/", views.UserIdRetriever.as_view(), name="userIdRetriever"),
     path("valuate/", views.ValuationListCreate.as_view(), name="valuationListCreate"),
     path("myValuations/", views.MyValuationList.as_view(), name="myValuationList"),
     path(

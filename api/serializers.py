@@ -373,10 +373,15 @@ class ValuationRegisterSerializer(serializers.ModelSerializer):
 
         if (
             Route.objects.filter(passengers=giver, pk=route_id).exists()
-            and not Route.objects.filter(passengers=receiver, pk=route_id).exists()
+            and Route.objects.filter(passengers=receiver, pk=route_id).exists()
         ):
             raise serializers.ValidationError(
                 {"error": "A passenger cannot value other passengers."}
+            )
+
+        if Valuation.objects.filter(giver=giver, receiver=receiver, route_id=route_id).exists():
+            raise serializers.ValidationError(
+                {"error": "You have already rated this user in this route."}
             )
 
         return attrs

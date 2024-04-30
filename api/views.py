@@ -5,8 +5,8 @@ This file contains all the views to implement the api
 from re import M
 from urllib import request
 
-from common.models import user
 from common.models.user import Driver, Report, User
+from common.models.route import Route
 
 # from rest_framework.views import APIView
 from rest_framework import generics, status
@@ -16,6 +16,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
+
 
 from .serializers import (
     DriverRegisterSerializer,
@@ -87,6 +88,7 @@ class DriverRetriever(generics.RetrieveUpdateDestroyAPIView):
         if instance.id != request.user.id:
             return Response(data={"error": "You can only delete your own user account."},
                             status=status.HTTP_403_FORBIDDEN)
+
         return super().delete(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
@@ -95,6 +97,9 @@ class DriverRetriever(generics.RetrieveUpdateDestroyAPIView):
         if instance.id != request.user.id:
             return Response(data={"error": "You can only update your own user account."},
                             status=status.HTTP_403_FORBIDDEN)
+        routes = Route.objects.filter(passengers=instance)
+        for route in routes:
+            route.passengers.remove(instance)
         return super().update(request, *args, **kwargs)
 
 
@@ -121,6 +126,9 @@ class UserRetriever(generics.RetrieveUpdateDestroyAPIView):
         if instance.id != request.user.id:
             return Response(data={"error": "You can only delete your own user account."},
                             status=status.HTTP_403_FORBIDDEN)
+        routes = Route.objects.filter(passengers=instance)
+        for route in routes:
+            route.passengers.remove(instance)
         return super().delete(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):

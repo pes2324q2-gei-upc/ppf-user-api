@@ -2,6 +2,10 @@
 This file contains all the views to implement the api    
 """
 
+from re import M
+from urllib import request
+
+from common.models import user
 from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
@@ -10,10 +14,12 @@ from common.models.valuation import Valuation
 
 # from rest_framework.views import APIView
 from rest_framework import generics, status
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
 
 from .serializers import (
     DriverRegisterSerializer,
@@ -39,6 +45,7 @@ class UserListCreate(generics.ListCreateAPIView):
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["username"]
     order_fields = ["points", "createdAt", "updatedAt"]
+    parser_classes = [MultiPartParser, FormParser]
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -112,8 +119,11 @@ class UserRetriever(generics.RetrieveUpdateDestroyAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    # parser_classes = (FormParser, MultiPartParser)
+
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()

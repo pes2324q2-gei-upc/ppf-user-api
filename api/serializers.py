@@ -23,7 +23,8 @@ class UserSerializer(serializers.ModelSerializer):
         and create the JSON
     """
 
-    password2 = serializers.CharField(max_length=50, write_only=True, required=False)
+    password2 = serializers.CharField(
+        max_length=50, write_only=True, required=False)
 
     class Meta:
         """
@@ -41,6 +42,7 @@ class UserSerializer(serializers.ModelSerializer):
             "password",
             "password2",
             "birthDate",
+            "profileImage",
         ]
         extra_kwargs = {
             "points": {"read_only": True},
@@ -69,7 +71,8 @@ class UserSerializer(serializers.ModelSerializer):
                 {"password": "This field is required when you fill the password2."}
             )
         if password != password2:
-            raise serializers.ValidationError({"password": "Passwords must match."})
+            raise serializers.ValidationError(
+                {"password": "Passwords must match."})
 
         return super().validate(attrs)
 
@@ -90,6 +93,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     """
 
     password2 = serializers.CharField(max_length=50, write_only=True)
+    # profileImage = serializers.ImageField(use_url=True)
 
     class Meta:
         """
@@ -105,6 +109,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "birthDate",
             "password",
             "password2",
+            "profileImage",
         ]
         extra_kwargs = {
             "password": {"write_only": True},
@@ -124,7 +129,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
                     continue  # Skip validation if value is not a string
 
                 if not value.strip():  # Check if value is a blank string
-                    raise serializers.ValidationError(f"{field_name.capitalize()} cannot be blank.")
+                    raise serializers.ValidationError(
+                        f"{field_name.capitalize()} cannot be blank.")
         return attrs
 
     def create(self, validated_data):
@@ -191,7 +197,8 @@ class DriverSerializer(UserSerializer):
             instance.chargerTypes.clear()
             # Add new relations
             for chargerTypeData in chargerTypesData:
-                chargerType = ChargerType.objects.get(chargerType=chargerTypeData)
+                chargerType = ChargerType.objects.get(
+                    chargerType=chargerTypeData)
                 instance.chargerTypes.add(chargerType)
 
         preferenceData = validated_data.pop("preference", None)
@@ -201,9 +208,12 @@ class DriverSerializer(UserSerializer):
             preference.canNotTravelWithPets = preferenceData.get(
                 "canNotTravelWithPets", preference.canNotTravelWithPets
             )
-            preference.listenToMusic = preferenceData.get("listenToMusic", preference.listenToMusic)
-            preference.noSmoking = preferenceData.get("noSmoking", preference.noSmoking)
-            preference.talkTooMuch = preferenceData.get("talkTooMuch", preference.talkTooMuch)
+            preference.listenToMusic = preferenceData.get(
+                "listenToMusic", preference.listenToMusic)
+            preference.noSmoking = preferenceData.get(
+                "noSmoking", preference.noSmoking)
+            preference.talkTooMuch = preferenceData.get(
+                "talkTooMuch", preference.talkTooMuch)
             preference.save()
 
         return super().update(instance, validated_data)
@@ -259,7 +269,8 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
                     continue  # Skip validation if value is not a string
 
                 if not value.strip():  # Check if value is a blank string
-                    raise serializers.ValidationError(f"{field_name.capitalize()} cannot be blank.")
+                    raise serializers.ValidationError(
+                        f"{field_name.capitalize()} cannot be blank.")
         return attrs
 
     def create(self, validated_data):
@@ -270,13 +281,15 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
 
         preference = Preference.objects.create(**preferenceData)
 
-        driver = Driver.objects.create_user(**validated_data, preference=preference)
+        driver = Driver.objects.create_user(
+            **validated_data, preference=preference)
         driver.set_password(password)
         driver.save()
 
         if chargerTypesData:
             for chargerTypeData in chargerTypesData:
-                chargerType = ChargerType.objects.get(chargerType=chargerTypeData)
+                chargerType = ChargerType.objects.get(
+                    chargerType=chargerTypeData)
                 driver.chargerTypes.add(chargerType)
 
         return driver
@@ -304,8 +317,9 @@ class ReportSerializer(serializers.ModelSerializer):
         """
         Override the create method to automatically fill the reporter field with the authenticated user.
         """
-        request = self.context.get("request")
-        validated_data["reporter"] = User.objects.all().filter(pk=request.user.id).first()  # type: ignore
+        request = self.context.get('request')
+        validated_data['reporter'] = User.objects.all().filter(
+            pk=request.user.id).first()  # type: ignore
         return super().create(validated_data)
 
 

@@ -11,5 +11,7 @@ RUN pip install -r requirements.txt
 COPY manage.py .
 COPY userApi userApi
 COPY api api
+COPY emailSending emailSending
+COPY usrLogin usrLogin
 
 CMD python manage.py runserver

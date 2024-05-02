@@ -2,8 +2,6 @@
 This document contains all the serializers that will be used by the api
 """
 
-import re
-from urllib import request
 from django.db import models
 from rest_framework import serializers
 

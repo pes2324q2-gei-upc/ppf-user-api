@@ -2,13 +2,7 @@
 This file contains all the views to implement the api    
 """
 
-from re import M
-from urllib import request
-
-from common.models import user
-from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
-from django.db import IntegrityError
 from common.models.user import Driver, Report, User
 from common.models.valuation import Valuation
 

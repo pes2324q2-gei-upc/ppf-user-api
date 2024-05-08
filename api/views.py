@@ -28,6 +28,7 @@ from .serializers import (
     UserSerializer,
     ValuationSerializer,
     ValuationRegisterSerializer,
+    UserImageUpdateSerializer,
 )
 
 
@@ -44,12 +45,36 @@ class UserListCreate(generics.ListCreateAPIView):
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["username"]
     order_fields = ["points", "createdAt", "updatedAt"]
-    parser_classes = [MultiPartParser, FormParser]
 
     def get_serializer_class(self):
         if self.request.method == "POST":
             return UserRegisterSerializer
         return super().get_serializer_class()
+
+
+class UserModifyAvatar(generics.UpdateAPIView):
+    """
+    The class that will modify the avatar of a user
+
+    Args:
+        generics (UpdateAPIView): This updates a user and pass it as json for the response
+    """
+
+    queryset = User.objects.all()
+    serializer_class = UserImageUpdateSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Check if the user requesting the action is the same as the user object being retrieved
+        if instance.id != request.user.id:
+            return Response(
+                data={"error": "You can only update your own user account."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return super().update(request, *args, **kwargs)
 
 
 class DriverListCreate(generics.ListCreateAPIView):

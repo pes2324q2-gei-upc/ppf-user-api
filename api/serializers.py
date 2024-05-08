@@ -40,7 +40,6 @@ class UserSerializer(serializers.ModelSerializer):
             "password",
             "password2",
             "birthDate",
-            "profileImage",
         ]
         extra_kwargs = {
             "points": {"read_only": True},
@@ -81,12 +80,37 @@ class UserSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
+class UserImageUpdateSerializer(serializers.ModelSerializer):
+    """
+    The User serializer class
+
+    Args:
+        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+    """
+
+    class Meta:
+        """
+        The Meta definition for user
+        """
+        model = User
+        fields = ["profileImage"]
+        extra_kwargs = {
+            "profileImage": {"required": True},
+        }
+
+    def update(self, instance, validated_data):
+        profileImage = validated_data.pop("profileImage")
+        instance.profileImage = profileImage
+        instance.save()
+        return instance
+
+
 class UserRegisterSerializer(serializers.ModelSerializer):
     """
     This is the Serializer for user registration
 
     Args:
-        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        serializers(ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
 
@@ -107,7 +131,6 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "birthDate",
             "password",
             "password2",
-            "profileImage",
         ]
         extra_kwargs = {
             "password": {"write_only": True},
@@ -157,7 +180,7 @@ class DriverSerializer(UserSerializer):
     The Driver serializer class
 
     Args:
-        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        serializers(ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
 
@@ -222,7 +245,7 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
     This is the Serializer for user registration
 
     Args:
-        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        serializers(ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
 
@@ -298,7 +321,7 @@ class ReportSerializer(serializers.ModelSerializer):
     The reports serializer
 
     Args:
-        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        serializers(ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
 
@@ -326,7 +349,7 @@ class ValuationSerializer(serializers.ModelSerializer):
     The Valuation serializer class
 
     Args:
-        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        serializers(ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
 
@@ -344,7 +367,7 @@ class ValuationRegisterSerializer(serializers.ModelSerializer):
     This is the Serializer for valuation creation
 
     Args:
-        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        serializers(ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
 
@@ -362,26 +385,30 @@ class ValuationRegisterSerializer(serializers.ModelSerializer):
         giver = self.context["request"].user
 
         if not User.objects.filter(pk=receiverId).exists():
-            raise serializers.ValidationError({"error": "Invalid receiver ID. User not found."})
+            raise serializers.ValidationError(
+                {"error": "Invalid receiver ID. User not found."})
 
         receiver = User.objects.get(pk=receiverId)
 
         if receiver.pk == giver.pk:
-            raise serializers.ValidationError({"error": "You cannot rate yourself."})
+            raise serializers.ValidationError(
+                {"error": "You cannot rate yourself."})
 
         route_id = attrs["route"].pk
         if not (
             Route.objects.filter(driver=receiver, pk=route_id).exists()
             or Route.objects.filter(passengers=receiver, pk=route_id).exists()
         ):
-            raise serializers.ValidationError({"error": "The receiver is not part of the route."})
+            raise serializers.ValidationError(
+                {"error": "The receiver is not part of the route."})
 
         # The giver, i.e the authificated user, belongs to the route
         if not (
             Route.objects.filter(driver=giver, pk=route_id).exists()
             or Route.objects.filter(passengers=giver, pk=route_id).exists()
         ):
-            raise serializers.ValidationError({"error": "The giver is not part of the route."})
+            raise serializers.ValidationError(
+                {"error": "The giver is not part of the route."})
 
         if (
             Route.objects.filter(passengers=giver, pk=route_id).exists()

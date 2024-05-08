@@ -1,7 +1,14 @@
 """
-This file contains all the views to implement the api    
+This file contains all the views to implement the api
 """
 
+from . import serializers
+from social_core.exceptions import MissingBackend, AuthTokenError, AuthForbidden
+from social_core.backends.oauth import BaseOAuth2
+from social_django.utils import load_strategy, load_backend
+from requests.exceptions import HTTPError
+from rest_framework import generics, permissions, status, views
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from re import M
 from urllib import request

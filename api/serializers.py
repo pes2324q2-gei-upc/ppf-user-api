@@ -2,6 +2,11 @@
 This document contains all the serializers that will be used by the api
 """
 
+from django.http import JsonResponse
+from . import serializers
+from requests.exceptions import HTTPError
+from rest_framework.response import Response
+from rest_framework import generics, permissions, status, views
 from django.db import models
 from rest_framework import serializers
 
@@ -362,26 +367,30 @@ class ValuationRegisterSerializer(serializers.ModelSerializer):
         giver = self.context["request"].user
 
         if not User.objects.filter(pk=receiverId).exists():
-            raise serializers.ValidationError({"error": "Invalid receiver ID. User not found."})
+            raise serializers.ValidationError(
+                {"error": "Invalid receiver ID. User not found."})
 
         receiver = User.objects.get(pk=receiverId)
 
         if receiver.pk == giver.pk:
-            raise serializers.ValidationError({"error": "You cannot rate yourself."})
+            raise serializers.ValidationError(
+                {"error": "You cannot rate yourself."})
 
         route_id = attrs["route"].pk
         if not (
             Route.objects.filter(driver=receiver, pk=route_id).exists()
             or Route.objects.filter(passengers=receiver, pk=route_id).exists()
         ):
-            raise serializers.ValidationError({"error": "The receiver is not part of the route."})
+            raise serializers.ValidationError(
+                {"error": "The receiver is not part of the route."})
 
         # The giver, i.e the authificated user, belongs to the route
         if not (
             Route.objects.filter(driver=giver, pk=route_id).exists()
             or Route.objects.filter(passengers=giver, pk=route_id).exists()
         ):
-            raise serializers.ValidationError({"error": "The giver is not part of the route."})
+            raise serializers.ValidationError(
+                {"error": "The giver is not part of the route."})
 
         if (
             Route.objects.filter(passengers=giver, pk=route_id).exists()
@@ -417,3 +426,12 @@ class ValuationRegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"error": str(e)})
 
         return valuation
+
+
+class SocialSerializer(serializers.Serializer):
+    """
+    Serializer which accepts an OAuth2 access token and provider.
+    """
+    provider = serializers.CharField(max_length=255, required=True)
+    access_token = serializers.CharField(
+        max_length=4096, required=True, trim_whitespace=True)

@@ -74,8 +74,7 @@ class UserModifyAvatar(generics.UpdateAPIView):
                 data={"error": "You can only update your own user account."},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        super().update(request, *args, **kwargs)
-        return Response(data={"message": "Avatar updated successfully.", "userId": instance.id}, status=status.HTTP_200_OK)
+        return super().update(request, *args, **kwargs)
 
 
 class DriverListCreate(generics.ListCreateAPIView):

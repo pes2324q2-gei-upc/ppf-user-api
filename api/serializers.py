@@ -40,6 +40,7 @@ class UserSerializer(serializers.ModelSerializer):
             "password",
             "password2",
             "birthDate",
+            "profileImage",
         ]
         extra_kwargs = {
             "points": {"read_only": True},
@@ -271,6 +272,7 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
             "chargerTypes",
             "preference",
             "iban",
+            "profileImage",
         ]
         extra_kwargs = {
             "password": {"write_only": True, "required": True},

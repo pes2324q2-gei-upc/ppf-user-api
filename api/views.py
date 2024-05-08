@@ -74,7 +74,8 @@ class UserModifyAvatar(generics.UpdateAPIView):
                 data={"error": "You can only update your own user account."},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        return super().update(request, *args, **kwargs)
+        super().update(request, *args, **kwargs)
+        return Response(data={"message": "Avatar updated successfully.", "userId": instance.id}, status=status.HTTP_200_OK)
 
 
 class DriverListCreate(generics.ListCreateAPIView):
@@ -148,7 +149,6 @@ class UserRetriever(generics.RetrieveUpdateDestroyAPIView):
 
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()

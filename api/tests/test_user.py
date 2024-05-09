@@ -1,4 +1,6 @@
-from urllib import response
+"""
+This module contains the tests for the users.
+"""
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
@@ -108,6 +110,35 @@ class CreateUserTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         message = json.loads(response.content.decode("utf-8"))
         self.assertEqual(message.get("non_field_errors"), "Passwords must match.")
+
+    def pointsCannotBeSet(self):
+        """
+        Ensure the API call returns an error if the points are set.
+        """
+
+        url = reverse("userListCreate")
+        data = {
+            "username": "distintUser",
+            "birthDate": "1998-10-06",
+            "password": "distintUser",
+            "password2": "distintUser",
+            "email": "distintUser@gmail.com",
+            "points": 100,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        message = json.loads(response.content.decode("utf-8"))
+        userCreated = User.objects.get(username="distintUser")
+        token, _ = Token.objects.get_or_create(user=userCreated)
+
+        urlGet = reverse("userRetriever", kwargs={"id": userCreated.pk})
+        headers = {
+            "Authorization": f"Token {token}",
+        }
+        responseGet = self.client.get(urlGet, headers=headers)  # type: ignore
+        self.assertEqual(responseGet.status_code, status.HTTP_200_OK)
+        messageGet = json.loads(responseGet.content.decode("utf-8"))
+        self.assertEqual(messageGet.get("points"), 0)
 
 
 class ListUserTest(APITestCase):

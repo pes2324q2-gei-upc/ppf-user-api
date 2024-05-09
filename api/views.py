@@ -90,10 +90,13 @@ class DriverRetriever(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         # Check if the user requesting the action is the same as the user object being retrieved
         if instance.id != request.user.id:
-            return Response(
-                data={"error": "You can only delete your own user account."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+
+            return Response(data={"error": "You can only delete your own user account."},
+                            status=status.HTTP_403_FORBIDDEN)
+        routes = Route.objects.filter(passengers=instance)
+        for route in routes:
+            route.passengers.remove(instance)
+
         return super().delete(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
@@ -102,9 +105,7 @@ class DriverRetriever(generics.RetrieveUpdateDestroyAPIView):
         if instance.id != request.user.id:
             return Response(data={"error": "You can only update your own user account."},
                             status=status.HTTP_403_FORBIDDEN)
-        routes = Route.objects.filter(passengers=instance)
-        for route in routes:
-            route.passengers.remove(instance)
+
         return super().update(request, *args, **kwargs)
 
 

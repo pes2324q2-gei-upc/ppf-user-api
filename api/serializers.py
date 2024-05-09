@@ -2,14 +2,11 @@
 This document contains all the serializers that will be used by the api
 """
 
+from common.models.route import Route
+from common.models.user import ChargerType, Driver, Preference, Report, User
+from common.models.valuation import Valuation
 from django.db import models
 from rest_framework import serializers
-
-
-from common.models.user import Driver, User, ChargerType, Preference, Report
-
-from common.models.valuation import Valuation
-from common.models.route import Route
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -71,7 +68,6 @@ class UserSerializer(serializers.ModelSerializer):
         if password != password2:
             raise serializers.ValidationError(
                 {"password": "Passwords must match."})
-
         return super().validate(attrs)
 
     def update(self, instance, validated_data):
@@ -119,6 +115,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         password2 = attrs.get("password2")
         if password != password2:
             raise serializers.ValidationError("Passwords must match.")
+
+        if User.objects.filter(email=attrs.get("email")).exists():
+            raise serializers.ValidationError("Email already exists.")
 
         for field_name, value in attrs.items():
             # Check if the field is not a DateField or DateTimeField
@@ -362,26 +361,30 @@ class ValuationRegisterSerializer(serializers.ModelSerializer):
         giver = self.context["request"].user
 
         if not User.objects.filter(pk=receiverId).exists():
-            raise serializers.ValidationError({"error": "Invalid receiver ID. User not found."})
+            raise serializers.ValidationError(
+                {"error": "Invalid receiver ID. User not found."})
 
         receiver = User.objects.get(pk=receiverId)
 
         if receiver.pk == giver.pk:
-            raise serializers.ValidationError({"error": "You cannot rate yourself."})
+            raise serializers.ValidationError(
+                {"error": "You cannot rate yourself."})
 
         route_id = attrs["route"].pk
         if not (
             Route.objects.filter(driver=receiver, pk=route_id).exists()
             or Route.objects.filter(passengers=receiver, pk=route_id).exists()
         ):
-            raise serializers.ValidationError({"error": "The receiver is not part of the route."})
+            raise serializers.ValidationError(
+                {"error": "The receiver is not part of the route."})
 
         # The giver, i.e the authificated user, belongs to the route
         if not (
             Route.objects.filter(driver=giver, pk=route_id).exists()
             or Route.objects.filter(passengers=giver, pk=route_id).exists()
         ):
-            raise serializers.ValidationError({"error": "The giver is not part of the route."})
+            raise serializers.ValidationError(
+                {"error": "The giver is not part of the route."})
 
         if (
             Route.objects.filter(passengers=giver, pk=route_id).exists()

@@ -2,11 +2,11 @@
 This document contains all the serializers that will be used by the api
 """
 
+from common.models.route import Route
+from common.models.user import ChargerType, Driver, Preference, Report, User
+from common.models.valuation import Valuation
 from django.db import models
 from rest_framework import serializers
-
-
-from common.models.user import Driver, User, ChargerType, Preference, Report
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -68,7 +68,6 @@ class UserSerializer(serializers.ModelSerializer):
         if password != password2:
             raise serializers.ValidationError(
                 {"password": "Passwords must match."})
-
         return super().validate(attrs)
 
     def update(self, instance, validated_data):
@@ -116,6 +115,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         password2 = attrs.get("password2")
         if password != password2:
             raise serializers.ValidationError("Passwords must match.")
+
+        if User.objects.filter(email=attrs.get("email")).exists():
+            raise serializers.ValidationError("Email already exists.")
 
         for field_name, value in attrs.items():
             # Check if the field is not a DateField or DateTimeField
@@ -303,9 +305,10 @@ class ReportSerializer(serializers.ModelSerializer):
         """
         The Meta definition for report
         """
+
         model = Report
-        fields = '__all__'
-        read_only_fields = ['reporter']  # Set reporter field as read-only
+        fields = "__all__"
+        read_only_fields = ["reporter"]  # Set reporter field as read-only
 
     def create(self, validated_data):
         """
@@ -315,3 +318,105 @@ class ReportSerializer(serializers.ModelSerializer):
         validated_data['reporter'] = User.objects.all().filter(
             pk=request.user.id).first()  # type: ignore
         return super().create(validated_data)
+
+
+class ValuationSerializer(serializers.ModelSerializer):
+    """
+    The Valuation serializer class
+
+    Args:
+        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        and create the JSON
+    """
+
+    class Meta:
+        """
+        The Meta definition for Valuation
+        """
+
+        model = Valuation
+        fields = ["id", "giver", "receiver", "rating", "comment"]
+
+
+class ValuationRegisterSerializer(serializers.ModelSerializer):
+    """
+    This is the Serializer for valuation creation
+
+    Args:
+        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        and create the JSON
+    """
+
+    receiver = serializers.IntegerField(source="receiver.id")
+
+    class Meta:
+        model = Valuation
+        fields = ["receiver", "route", "rating", "comment"]
+        extra_kwargs = {
+            "comment": {"required": False},
+        }
+
+    def validate(self, attrs):
+        receiverId = attrs.get("receiver").get("id")
+        giver = self.context["request"].user
+
+        if not User.objects.filter(pk=receiverId).exists():
+            raise serializers.ValidationError(
+                {"error": "Invalid receiver ID. User not found."})
+
+        receiver = User.objects.get(pk=receiverId)
+
+        if receiver.pk == giver.pk:
+            raise serializers.ValidationError(
+                {"error": "You cannot rate yourself."})
+
+        route_id = attrs["route"].pk
+        if not (
+            Route.objects.filter(driver=receiver, pk=route_id).exists()
+            or Route.objects.filter(passengers=receiver, pk=route_id).exists()
+        ):
+            raise serializers.ValidationError(
+                {"error": "The receiver is not part of the route."})
+
+        # The giver, i.e the authificated user, belongs to the route
+        if not (
+            Route.objects.filter(driver=giver, pk=route_id).exists()
+            or Route.objects.filter(passengers=giver, pk=route_id).exists()
+        ):
+            raise serializers.ValidationError(
+                {"error": "The giver is not part of the route."})
+
+        if (
+            Route.objects.filter(passengers=giver, pk=route_id).exists()
+            and Route.objects.filter(passengers=receiver, pk=route_id).exists()
+        ):
+            raise serializers.ValidationError(
+                {"error": "A passenger cannot value other passengers."}
+            )
+
+        if Valuation.objects.filter(giver=giver, receiver=receiver, route_id=route_id).exists():
+            raise serializers.ValidationError(
+                {"error": "You have already rated this user in this route."}
+            )
+
+        return attrs
+
+    def create(self, validated_data):
+        receiver_id = validated_data.get("receiver").get("id")
+        route = validated_data.get("route")
+        rating = validated_data.get("rating")
+        comment = validated_data.get("comment")
+        giver_id = self.context["request"].user.id
+
+        try:
+            valuation = Valuation.objects.create(
+                giver_id=giver_id,
+                receiver_id=receiver_id,
+                route=route,
+                rating=rating,
+                comment=comment,
+            )
+        except Exception as e:
+            raise serializers.ValidationError({"error": str(e)})
+
+        return valuation

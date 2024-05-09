@@ -28,4 +28,11 @@ urlpatterns = [
     path("reports/<int:pk>/", views.ReportRetriever.as_view(),
          name="reportRetriever"),
     path("users/self/", views.UserIdRetriever.as_view(), name="userIdRetriever"),
+    path("valuate/", views.ValuationListCreate.as_view(), name="valuationListCreate"),
+    path("myValuations/", views.MyValuationList.as_view(), name="myValuationList"),
+    path(
+        "user/<int:user_id>/valuations/",
+        views.UserValuationList.as_view(),
+        name="userValuationList",
+    ),
 ]

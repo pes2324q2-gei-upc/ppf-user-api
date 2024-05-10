@@ -77,12 +77,37 @@ class UserSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
+class UserImageUpdateSerializer(serializers.ModelSerializer):
+    """
+    The User serializer class
+
+    Args:
+        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+    """
+
+    class Meta:
+        """
+        The Meta definition for user
+        """
+        model = User
+        fields = ["profileImage"]
+        extra_kwargs = {
+            "profileImage": {"required": True},
+        }
+
+    def update(self, instance, validated_data):
+        profileImage = validated_data.pop("profileImage")
+        instance.profileImage = profileImage
+        instance.save()
+        return instance
+
+
 class UserRegisterSerializer(serializers.ModelSerializer):
     """
     This is the Serializer for user registration
 
     Args:
-        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        serializers(ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
 
@@ -96,6 +121,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
         model = User
         fields = [
+            "id",
             "username",
             "first_name",
             "last_name",
@@ -103,11 +129,11 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "birthDate",
             "password",
             "password2",
-            "profileImage",
         ]
         extra_kwargs = {
             "password": {"write_only": True},
             "points": {"write_only": True},
+            "id": {"read_only": True},
         }
 
     def validate(self, attrs):
@@ -156,7 +182,7 @@ class DriverSerializer(UserSerializer):
     The Driver serializer class
 
     Args:
-        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        serializers(ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
 
@@ -221,7 +247,7 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
     This is the Serializer for user registration
 
     Args:
-        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        serializers(ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
 
@@ -235,6 +261,7 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
 
         model = Driver
         fields = [
+            "id",
             "username",
             "first_name",
             "last_name",
@@ -247,10 +274,12 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
             "chargerTypes",
             "preference",
             "iban",
+            "profileImage",
         ]
         extra_kwargs = {
             "password": {"write_only": True, "required": True},
             "driverPoints": {"read_only": True},
+            "id": {"read_only": True},
         }
 
     def validate(self, attrs):
@@ -297,7 +326,7 @@ class ReportSerializer(serializers.ModelSerializer):
     The reports serializer
 
     Args:
-        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        serializers(ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
 
@@ -325,7 +354,7 @@ class ValuationSerializer(serializers.ModelSerializer):
     The Valuation serializer class
 
     Args:
-        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        serializers(ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
 
@@ -343,7 +372,7 @@ class ValuationRegisterSerializer(serializers.ModelSerializer):
     This is the Serializer for valuation creation
 
     Args:
-        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        serializers(ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
 

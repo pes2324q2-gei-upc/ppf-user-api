@@ -180,7 +180,7 @@ AWS_S3_FILE_OVERWRITE = False
 
 # Media files
 class MediaStorage(S3Boto3Storage):
-    location = "profile_image"  # Path in Bucket to save media files
+    location = "media"  # Path in Bucket to save media files
     file_overwrite = False
 
 

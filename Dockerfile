@@ -14,4 +14,4 @@ COPY api api
 COPY emailSending emailSending
 COPY usrLogin usrLogin
 
-CMD python manage.py runserver 0.0.0.0:8081
+CMD python manage.py runserver

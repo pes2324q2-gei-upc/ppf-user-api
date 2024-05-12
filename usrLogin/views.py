@@ -6,9 +6,9 @@ from django.contrib.auth import authenticate
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from .service.social_logins import get_or_create_from_google, generate_token
 
 from .serializers import UserLoginSerializer
 
@@ -30,14 +30,16 @@ class LoginAPIView(APIView):
                 description="Token successfully created or updated",
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
-                    properties={"token": openapi.Schema(type=openapi.TYPE_STRING)},
+                    properties={"token": openapi.Schema(
+                        type=openapi.TYPE_STRING)},
                 ),
             ),
             401: openapi.Response(
                 description="Unauthorized or invalid credentials",
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
-                    properties={"error": openapi.Schema(type=openapi.TYPE_STRING)},
+                    properties={"error": openapi.Schema(
+                        type=openapi.TYPE_STRING)},
                 ),
             ),
         },
@@ -60,18 +62,59 @@ class LoginAPIView(APIView):
             user = authenticate(username=email, password=password)
 
             if user:
-                # Find an active token for the user
-                token = Token.objects.filter(user=user)  # pylint: disable=no-member
-                if token.exists():
-                    token = token.delete()
-
-                # Create a new token for the user
-                token = Token.objects.create(user=user)  # pylint: disable=no-member
-                token.save()
-
-                return Response({"token": token.key})
+                generatedToken = generate_token(user)
+                return Response({"token": generatedToken.key})
             # If user not found means that the credentials are invalid or
             # wrong username
             return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
         else:
             return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class GoogleLoginAPIView(APIView):
+    """
+    The class that logs in a user using Google credentials.
+    """
+
+    def post(self, request):
+        """
+        Handle POST request for user login using Google credentials.
+
+        Parameters:
+        - request: HTTP request object containing user login credentials.
+
+        Returns:
+        - Response: HTTP response object containing a token or error message.
+        """
+        return Response({"message": "Google login not implemented yet"})
+        # user = get_or_create_from_google(request.data)
+        # if user:
+        #    generatedToken = generate_token(user)
+        #    return Response({"token": generatedToken.key})
+#
+        # return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class FacebookLoginAPIView(APIView):
+    """
+    The class that logs in a user using Facebook credentials.
+    """
+
+    def post(self, request):
+        """
+        Handle POST request for user login using Facebook credentials.
+
+        Parameters:
+        - request: HTTP request object containing user login credentials.
+
+        Returns:
+        - Response: HTTP response object containing a token or error message.
+        """
+        return Response({"message": "Facebook login not implemented yet"})
+
+        # user = get_or_create_from_facebook(request.data)
+        # if user:
+        #     generatedToken = generate_token(user)
+        #     return Response({"token": generatedToken.key})
+#
+        # return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)

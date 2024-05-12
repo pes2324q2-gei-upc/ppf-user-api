@@ -20,4 +20,7 @@ from usrLogin import views
 
 urlpatterns = [
     path("", views.LoginAPIView.as_view(), name="login"),
+    path("google", views.GoogleLoginAPIView.as_view(), name="google_login"),
+    path("facebook", views.FacebookLoginAPIView.as_view(),
+         name="facebook_login"),
 ]

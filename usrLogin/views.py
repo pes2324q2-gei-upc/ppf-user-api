@@ -8,7 +8,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .service.social_logins import get_or_create_from_google, generate_token
+from .service.social_logins import get_or_create_from_google, ger_or_create_from_facebook, generate_token
 
 from .serializers import UserLoginSerializer
 from api.serializers import UserRegisterSerializer
@@ -130,11 +130,8 @@ class FacebookLoginAPIView(APIView):
         Returns:
         - Response: HTTP response object containing a token or error message.
         """
-        return Response({"message": "Facebook login not implemented yet"})
-
-        # user = get_or_create_from_facebook(request.data)
-        # if user:
-        #     generatedToken = generate_token(user)
-        #     return Response({"token": generatedToken.key})
-#
-        # return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+        user = ger_or_create_from_facebook(request.data)
+        if user:
+            generatedToken = generate_token(user)
+            return Response({"token": generatedToken.key})
+        return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)

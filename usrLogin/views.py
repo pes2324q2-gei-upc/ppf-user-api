@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from .service.social_logins import get_or_create_from_google, generate_token
 
 from .serializers import UserLoginSerializer
+from api.serializers import UserRegisterSerializer
 
 # Create your views here.
 
@@ -75,7 +76,27 @@ class GoogleLoginAPIView(APIView):
     """
     The class that logs in a user using Google credentials.
     """
-
+    @swagger_auto_schema(
+        request_body=UserRegisterSerializer,
+        responses={
+            200: openapi.Response(
+                description="Token successfully created or updated",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={"token": openapi.Schema(
+                        type=openapi.TYPE_STRING)},
+                ),
+            ),
+            401: openapi.Response(
+                description="Unauthorized or invalid credentials",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={"error": openapi.Schema(
+                        type=openapi.TYPE_STRING)},
+                ),
+            ),
+        },
+    )
     def post(self, request):
         """
         Handle POST request for user login using Google credentials.
@@ -86,13 +107,12 @@ class GoogleLoginAPIView(APIView):
         Returns:
         - Response: HTTP response object containing a token or error message.
         """
-        return Response({"message": "Google login not implemented yet"})
-        # user = get_or_create_from_google(request.data)
-        # if user:
-        #    generatedToken = generate_token(user)
-        #    return Response({"token": generatedToken.key})
-#
-        # return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+        # return Response({"message": "Google login not implemented yet"})
+        user = get_or_create_from_google(request.data)
+        if user:
+            generatedToken = generate_token(user)
+            return Response({"token": generatedToken.key})
+        return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class FacebookLoginAPIView(APIView):

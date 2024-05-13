@@ -1,5 +1,9 @@
+from operator import is_
 from common.models.user import User
 from rest_framework.authtoken.models import Token
+from api.serializers import UserRegisterSerializer
+from rest_framework import status
+from rest_framework.response import Response
 
 
 def generate_token(user):
@@ -23,19 +27,19 @@ def get_or_create_from_google(data):
     # Check if user exists in the database
     user = User.objects.filter(email=data.get(
         "email"), typeOfLogin="google").first()
-
     if user:
         # User already exists, return the user
         return user
     else:
+        data.update({"typeOfLogin": "google"})
         # User does not exist, create a new user
-        user = User()
-        user.email = data.get("email")
-        user.username = data.get("email").split("@")[0]
-        user.birthDate = data.get("birthDate")
-        user.password = data.get("")
-        user.typeOfLogin = "google"
-        user.save()
-        return user
-
-    # Return the created user
+        serializedUser = UserRegisterSerializer(
+            data=data)
+        print(serializedUser.is_valid())
+        if serializedUser.is_valid():
+            user = serializedUser.save()
+            return user
+        else:
+            print(serializedUser.errors)
+            return user
+        # Return the created user

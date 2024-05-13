@@ -113,6 +113,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "password",
             "password2",
             "profileImage",
+            "typeOfLogin",
         ]
         extra_kwargs = {
             "password": {"write_only": True},

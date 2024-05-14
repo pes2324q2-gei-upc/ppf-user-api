@@ -287,7 +287,8 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
         password2 = attrs.get("password2")
         if password != password2:
             raise serializers.ValidationError("Passwords must match.")
-
+        if User.objects.filter(email=attrs.get("email")).exists():
+            raise serializers.ValidationError("Email already exists.")
         for field_name, value in attrs.items():
             # Check if the field is not a DateField or DateTimeField
             if not isinstance(value, (models.DateField, models.DateTimeField)):

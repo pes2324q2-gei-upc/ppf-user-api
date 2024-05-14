@@ -2,33 +2,31 @@
 This file contains all the views to implement the api    
 """
 
-from django.shortcuts import get_object_or_404
 from re import M
 from urllib import request
 
-from common.models.user import Driver, Report, User
 from common.models.route import Route
+from common.models.user import Driver, Report, User
 from common.models.valuation import Valuation
+from django.shortcuts import get_object_or_404
 
 # from rest_framework.views import APIView
 from rest_framework import generics, status
-from rest_framework.parsers import FormParser, MultiPartParser
-from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.parsers import MultiPartParser, FormParser
-
 
 from .serializers import (
     DriverRegisterSerializer,
     DriverSerializer,
     ReportSerializer,
+    UserImageUpdateSerializer,
     UserRegisterSerializer,
     UserSerializer,
-    ValuationSerializer,
     ValuationRegisterSerializer,
-    UserImageUpdateSerializer,
+    ValuationSerializer,
 )
 
 
@@ -231,6 +229,7 @@ class UserIdRetriever(generics.GenericAPIView):
 
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
 
     def get(self, request, *args, **kwargs):
         """

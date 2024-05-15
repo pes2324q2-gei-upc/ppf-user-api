@@ -15,4 +15,4 @@ COPY api api
 COPY emailSending emailSending
 COPY usrLogin usrLogin
 
-CMD python manage.py runserver
+CMD [ "python", "manage.py", "runserver", "0.0.0.0:8000"]

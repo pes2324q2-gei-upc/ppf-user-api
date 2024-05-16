@@ -1,57 +1,17 @@
-from django.db.models.signals import post_save, m2m_changed
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 from common.models.achievement import UserAchievementProgress, Achievement
-from common.models.route import Route
 from common.models.valuation import Valuation
 from common.models.user import User
 
 
-# Create 1, 10 and 50 routes
-@receiver(post_save, sender=Route)
-def route_created(sender, instance, created, **kwargs):
+"""
+# Only if we need to created with antecipation all the achievements for a user
+@receiver(post_save, sender=User)
+def user_created(sender, instance, created, **kwargs):
     if created:
-        achievements = Achievement.objects.filter(
-            title__in=["PrimeraVez", "ArquitectoViajero", "MaestroDeRutas"]
-        )
-
-        for achievement in achievements:
-            user_achievement, _ = UserAchievementProgress.objects.get_or_create(
-                user=instance.driver, achievement=achievement
-            )
-
-            check_and_increment_progress(user_achievement, achievement, instance)
-
-
-# Join 1, 10 and 50 routes
-@receiver(m2m_changed, sender=Route.passengers.through)
-def route_joined(sender, instance, action, **kwargs):
-    if action == "post_add":
-        achievements = Achievement.objects.filter(
-            title__in=["InfiltRuta", "ExploradorDecenal", "NomadaIntrepido"]
-        )
-
-        for achievement in achievements:
-            user_achievement, _ = UserAchievementProgress.objects.get_or_create(
-                user=instance.driver, achievement=achievement
-            )
-
-            check_and_increment_progress(user_achievement, achievement, instance)
-
-
-# End 1 route
-@receiver(post_save, sender=Route)
-def route_finalized(sender, instance, created, **kwargs):
-    if not (created) and instance.finalized:
-        try:
-            achievement = Achievement.objects.get(title="FinalFeliz")
-        except Achievement.DoesNotExist:
-            return
-
-        user_achievement, _ = UserAchievementProgress.objects.get_or_create(
-            user=instance.driver, achievement=achievement
-        )
-
-        check_and_increment_progress(user_achievement, achievement, instance)
+        for achievement in Achievement.objects.all():
+            UserAchievementProgress.objects.create(user=instance, achievement=achievement)"""
 
 
 # Valuate 1 user

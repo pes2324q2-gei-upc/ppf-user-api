@@ -2,32 +2,31 @@
 This file contains all the views to implement the api    
 """
 
-from django.shortcuts import get_object_or_404
 from re import M
 from urllib import request
 
-from common.models.user import Driver, Report, User
 from common.models.route import Route
+from common.models.user import Driver, Report, User
 from common.models.valuation import Valuation
+from django.shortcuts import get_object_or_404
 
 # from rest_framework.views import APIView
 from rest_framework import generics, status
-from rest_framework.parsers import FormParser, MultiPartParser
-from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.parsers import MultiPartParser, FormParser
-
 
 from .serializers import (
     DriverRegisterSerializer,
     DriverSerializer,
     ReportSerializer,
+    UserImageUpdateSerializer,
     UserRegisterSerializer,
     UserSerializer,
-    ValuationSerializer,
     ValuationRegisterSerializer,
+    ValuationSerializer,
 )
 
 
@@ -44,12 +43,36 @@ class UserListCreate(generics.ListCreateAPIView):
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["username"]
     order_fields = ["points", "createdAt", "updatedAt"]
-    parser_classes = [MultiPartParser, FormParser]
 
     def get_serializer_class(self):
         if self.request.method == "POST":
             return UserRegisterSerializer
         return super().get_serializer_class()
+
+
+class UserModifyAvatar(generics.UpdateAPIView):
+    """
+    The class that will modify the avatar of a user
+
+    Args:
+        generics (UpdateAPIView): This updates a user and pass it as json for the response
+    """
+
+    queryset = User.objects.all()
+    serializer_class = UserImageUpdateSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Check if the user requesting the action is the same as the user object being retrieved
+        if instance.id != request.user.id:
+            return Response(
+                data={"error": "You can only update your own user account."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return super().update(request, *args, **kwargs)
 
 
 class DriverListCreate(generics.ListCreateAPIView):
@@ -90,10 +113,13 @@ class DriverRetriever(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         # Check if the user requesting the action is the same as the user object being retrieved
         if instance.id != request.user.id:
-            return Response(
-                data={"error": "You can only delete your own user account."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+
+            return Response(data={"error": "You can only delete your own user account."},
+                            status=status.HTTP_403_FORBIDDEN)
+        routes = Route.objects.filter(passengers=instance)
+        for route in routes:
+            route.passengers.remove(instance)
+
         return super().delete(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
@@ -102,9 +128,7 @@ class DriverRetriever(generics.RetrieveUpdateDestroyAPIView):
         if instance.id != request.user.id:
             return Response(data={"error": "You can only update your own user account."},
                             status=status.HTTP_403_FORBIDDEN)
-        routes = Route.objects.filter(passengers=instance)
-        for route in routes:
-            route.passengers.remove(instance)
+
         return super().update(request, *args, **kwargs)
 
 
@@ -123,7 +147,6 @@ class UserRetriever(generics.RetrieveUpdateDestroyAPIView):
 
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -206,6 +229,7 @@ class UserIdRetriever(generics.GenericAPIView):
 
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
 
     def get(self, request, *args, **kwargs):
         """

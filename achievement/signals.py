@@ -5,15 +5,6 @@ from common.models.valuation import Valuation
 from common.models.user import User
 
 
-"""
-# Only if we need to created with antecipation all the achievements for a user
-@receiver(post_save, sender=User)
-def user_created(sender, instance, created, **kwargs):
-    if created:
-        for achievement in Achievement.objects.all():
-            UserAchievementProgress.objects.create(user=instance, achievement=achievement)"""
-
-
 # Valuate 1 user
 @receiver(post_save, sender=Valuation)
 def user_valuated(sender, instance, created, **kwargs):
@@ -35,7 +26,7 @@ def user_valuated(sender, instance, created, **kwargs):
 # so the signal will be triggered.
 @receiver(post_save, sender=User)
 def user_changed_profile(sender, instance, created, **kwargs):
-    if not (created):
+    if not created:
         try:
             achievement = Achievement.objects.get(title="Camaleon")
         except Achievement.DoesNotExist:

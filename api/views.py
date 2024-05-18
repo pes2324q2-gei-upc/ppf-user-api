@@ -2,13 +2,12 @@
 This file contains all the views to implement the api    
 """
 
-from re import M
-from urllib import request
-
+from api.notifications.push_controller import PushController
 from common.models.route import Route
 from common.models.user import Driver, Report, User
 from common.models.valuation import Valuation
 from django.shortcuts import get_object_or_404
+from firebase_admin.exceptions import FirebaseError
 
 # from rest_framework.views import APIView
 from rest_framework import generics, status
@@ -28,6 +27,8 @@ from .serializers import (
     ValuationRegisterSerializer,
     ValuationSerializer,
 )
+
+pushController = PushController()
 
 
 class UserListCreate(generics.ListCreateAPIView):
@@ -113,9 +114,11 @@ class DriverRetriever(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         # Check if the user requesting the action is the same as the user object being retrieved
         if instance.id != request.user.id:
+            return Response(
+                data={"error": "You can only delete your own user account."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
-            return Response(data={"error": "You can only delete your own user account."},
-                            status=status.HTTP_403_FORBIDDEN)
         routes = Route.objects.filter(passengers=instance)
         for route in routes:
             route.passengers.remove(instance)
@@ -126,9 +129,10 @@ class DriverRetriever(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         # Check if the user requesting the action is the same as the user object being retrieved
         if instance.id != request.user.id:
-            return Response(data={"error": "You can only update your own user account."},
-                            status=status.HTTP_403_FORBIDDEN)
-
+            return Response(
+                data={"error": "You can only update your own user account."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         return super().update(request, *args, **kwargs)
 
 
@@ -152,8 +156,10 @@ class UserRetriever(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         # Check if the user requesting the action is the same as the user object being retrieved
         if instance.id != request.user.id:
-            return Response(data={"error": "You can only delete your own user account."},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                data={"error": "You can only delete your own user account."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         routes = Route.objects.filter(passengers=instance)
         for route in routes:
             route.passengers.remove(instance)
@@ -290,3 +296,76 @@ class UserValuationList(generics.ListAPIView):
     def get_queryset(self):
         user = get_object_or_404(User, pk=self.kwargs["user_id"])
         return Valuation.objects.filter(receiver=user)
+
+
+class RegisterFCMToken(generics.CreateAPIView):
+    """
+    The class that will register the FCM token of the user
+
+    Args:
+        CreateAPIView: This creates a new FCM token and pass it as json for the response
+    """
+
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        # Retrieve the user
+        user = request.user
+        # Retrieve the fcm token
+        try:
+            pushController.addToken(user, request.data["token"])
+        except FirebaseError as e:
+            return Response(data={"error": "Error creating the FCM token"}, status=e.code)
+
+        return Response(status=status.HTTP_201_CREATED)
+
+
+class SendFCMNotification(generics.CreateAPIView):
+    """
+    The class that will send a FCM notification to a user
+
+    Args:
+        CreateAPIView: This creates a new FCM notification and pass it as json for the response
+    """
+
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def validate(self, request):
+        if request.data["title"] is None or request.data["body"] is None:
+            return Response(
+                data={"error": "Title and body are required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        if request.data["title"] == "" or request.data["body"] == "":
+            return Response(
+                data={"error": "Title and body cannot be empty"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        return None
+
+    def create(self, request, *args, **kwargs):
+        # Retrieve the user
+        user = request.user
+
+        # Retrieve the fcm token
+        validation = self.validate(request)
+        if validation is not None:
+            return validation
+
+        # Check if user has a device token
+        token = pushController.token(user)
+        if token is None:
+            return Response(
+                data={"error": "User does not have a device token"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            pushController.notifyTo(user, request.data["title"], request.data["body"])
+        except FirebaseError as e:
+            return Response(data={"error": "Error sending the FCM notification"}, status=e.code)
+        return Response(status=status.HTTP_201_CREATED)

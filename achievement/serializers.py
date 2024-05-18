@@ -9,6 +9,6 @@ class UserAchievementProgressSerializer(serializers.ModelSerializer):
         model = UserAchievementProgress
         fields = [
             "title",
-            "progress",
+            "achieved",
             "date_achieved",
         ]

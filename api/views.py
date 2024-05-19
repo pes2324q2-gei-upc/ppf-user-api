@@ -349,7 +349,12 @@ class SendFCMNotification(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         # Retrieve the user
-        user = request.user
+        userId: str = request.data["user"]
+        if userId is None:
+            return Response(
+                data={"error": "User id is required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        user: User = get_object_or_404(User, pk=userId)
 
         # Retrieve the fcm token
         validation = self.validate(request)

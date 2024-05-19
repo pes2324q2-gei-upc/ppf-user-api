@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "usrLogin",
     "drf_yasg",
     "emailSending",
+    "achievement",
 
     # S3
     "storages",

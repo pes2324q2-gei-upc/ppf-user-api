@@ -14,5 +14,6 @@ COPY userApi userApi
 COPY api api
 COPY emailSending emailSending
 COPY usrLogin usrLogin
+COPY achievement achievement
 
 CMD python manage.py runserver

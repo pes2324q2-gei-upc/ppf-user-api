@@ -2,14 +2,11 @@
 This document contains all the serializers that will be used by the api
 """
 
+from common.models.route import Route
+from common.models.user import ChargerType, Driver, Preference, Report, User
+from common.models.valuation import Valuation
 from django.db import models
 from rest_framework import serializers
-
-
-from common.models.user import Driver, User, ChargerType, Preference, Report
-
-from common.models.valuation import Valuation
-from common.models.route import Route
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -71,7 +68,6 @@ class UserSerializer(serializers.ModelSerializer):
         if password != password2:
             raise serializers.ValidationError(
                 {"password": "Passwords must match."})
-
         return super().validate(attrs)
 
     def update(self, instance, validated_data):
@@ -81,12 +77,37 @@ class UserSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
+class UserImageUpdateSerializer(serializers.ModelSerializer):
+    """
+    The User serializer class
+
+    Args:
+        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+    """
+
+    class Meta:
+        """
+        The Meta definition for user
+        """
+        model = User
+        fields = ["profileImage"]
+        extra_kwargs = {
+            "profileImage": {"required": True},
+        }
+
+    def update(self, instance, validated_data):
+        profileImage = validated_data.pop("profileImage")
+        instance.profileImage = profileImage
+        instance.save()
+        return instance
+
+
 class UserRegisterSerializer(serializers.ModelSerializer):
     """
     This is the Serializer for user registration
 
     Args:
-        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        serializers(ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
 
@@ -100,6 +121,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
         model = User
         fields = [
+            "id",
             "username",
             "first_name",
             "last_name",
@@ -107,11 +129,11 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "birthDate",
             "password",
             "password2",
-            "profileImage",
         ]
         extra_kwargs = {
             "password": {"write_only": True},
             "points": {"write_only": True},
+            "id": {"read_only": True},
         }
 
     def validate(self, attrs):
@@ -119,6 +141,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         password2 = attrs.get("password2")
         if password != password2:
             raise serializers.ValidationError("Passwords must match.")
+
+        if User.objects.filter(email=attrs.get("email")).exists():
+            raise serializers.ValidationError("Email already exists.")
 
         for field_name, value in attrs.items():
             # Check if the field is not a DateField or DateTimeField
@@ -157,7 +182,7 @@ class DriverSerializer(UserSerializer):
     The Driver serializer class
 
     Args:
-        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        serializers(ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
 
@@ -222,7 +247,7 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
     This is the Serializer for user registration
 
     Args:
-        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        serializers(ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
 
@@ -236,6 +261,7 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
 
         model = Driver
         fields = [
+            "id",
             "username",
             "first_name",
             "last_name",
@@ -248,10 +274,12 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
             "chargerTypes",
             "preference",
             "iban",
+            "profileImage",
         ]
         extra_kwargs = {
             "password": {"write_only": True, "required": True},
             "driverPoints": {"read_only": True},
+            "id": {"read_only": True},
         }
 
     def validate(self, attrs):
@@ -259,7 +287,8 @@ class DriverRegisterSerializer(serializers.ModelSerializer):
         password2 = attrs.get("password2")
         if password != password2:
             raise serializers.ValidationError("Passwords must match.")
-
+        if User.objects.filter(email=attrs.get("email")).exists():
+            raise serializers.ValidationError("Email already exists.")
         for field_name, value in attrs.items():
             # Check if the field is not a DateField or DateTimeField
             if not isinstance(value, (models.DateField, models.DateTimeField)):
@@ -298,7 +327,7 @@ class ReportSerializer(serializers.ModelSerializer):
     The reports serializer
 
     Args:
-        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        serializers(ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
 
@@ -326,7 +355,7 @@ class ValuationSerializer(serializers.ModelSerializer):
     The Valuation serializer class
 
     Args:
-        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        serializers(ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
 
@@ -344,7 +373,7 @@ class ValuationRegisterSerializer(serializers.ModelSerializer):
     This is the Serializer for valuation creation
 
     Args:
-        serializers (ModelSerializer): a serializer model to conveniently manipulate the class
+        serializers(ModelSerializer): a serializer model to conveniently manipulate the class
         and create the JSON
     """
 
@@ -362,26 +391,30 @@ class ValuationRegisterSerializer(serializers.ModelSerializer):
         giver = self.context["request"].user
 
         if not User.objects.filter(pk=receiverId).exists():
-            raise serializers.ValidationError({"error": "Invalid receiver ID. User not found."})
+            raise serializers.ValidationError(
+                {"error": "Invalid receiver ID. User not found."})
 
         receiver = User.objects.get(pk=receiverId)
 
         if receiver.pk == giver.pk:
-            raise serializers.ValidationError({"error": "You cannot rate yourself."})
+            raise serializers.ValidationError(
+                {"error": "You cannot rate yourself."})
 
         route_id = attrs["route"].pk
         if not (
             Route.objects.filter(driver=receiver, pk=route_id).exists()
             or Route.objects.filter(passengers=receiver, pk=route_id).exists()
         ):
-            raise serializers.ValidationError({"error": "The receiver is not part of the route."})
+            raise serializers.ValidationError(
+                {"error": "The receiver is not part of the route."})
 
         # The giver, i.e the authificated user, belongs to the route
         if not (
             Route.objects.filter(driver=giver, pk=route_id).exists()
             or Route.objects.filter(passengers=giver, pk=route_id).exists()
         ):
-            raise serializers.ValidationError({"error": "The giver is not part of the route."})
+            raise serializers.ValidationError(
+                {"error": "The giver is not part of the route."})
 
         if (
             Route.objects.filter(passengers=giver, pk=route_id).exists()

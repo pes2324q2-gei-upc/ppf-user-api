@@ -46,11 +46,8 @@ class CreateUserTest(APITestCase):
         }
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            user = None
-        self.assertIsNotNone(user)
+        user_exists = User.objects.filter(username=username).exists()
+        self.assertTrue(user_exists)
 
         message = json.loads(response.content.decode("utf-8"))
         self.assertEqual(message.get("username"), username)
@@ -79,7 +76,7 @@ class CreateUserTest(APITestCase):
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         message = json.loads(response.content.decode("utf-8"))
-        self.assertEqual(message.get("username"), "A user with that username already exists.")
+        self.assertIn("A user with that username already exists.", message.get("username"))
 
         url = reverse("userListCreate")
         data = {
@@ -92,9 +89,9 @@ class CreateUserTest(APITestCase):
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         message = json.loads(response.content.decode("utf-8"))
-        self.assertEqual(message.get("email"), "A user with that email already exists.")
+        self.assertIn("Email already exists.", message.get("non_field_errors"))
 
-    def incorrectPassword(self):
+    def testIncorrectPassword(self):
         """
         Ensure the API call returns an error if the password is incorrect.
         """
@@ -110,7 +107,7 @@ class CreateUserTest(APITestCase):
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         message = json.loads(response.content.decode("utf-8"))
-        self.assertEqual(message.get("non_field_errors"), "Passwords must match.")
+        self.assertIn("Passwords must match.", message.get("non_field_errors"))
 
     def pointsCannotBeSet(self):
         """
@@ -215,7 +212,7 @@ class GetUserTest(APITestCase):
         Ensure the API call returns the user information.
         """
 
-        url = reverse("userRetriever", kwargs={"id": self.user.pk})
+        url = reverse("userRetriever", kwargs={"pk": self.user.pk})
         headers = {
             "Authorization": f"Token {self.token}",
         }
@@ -235,7 +232,7 @@ class GetUserTest(APITestCase):
         Ensure the API call returns an error if the user is not authenticated.
         """
 
-        url = reverse("userRetriever", kwargs={"id": self.user.pk})
+        url = reverse("userRetriever", kwargs={"pk": self.user.pk})
         response = self.client.get(url)
         message = json.loads(response.content.decode("utf-8"))
         self.assertEqual(message.get("detail"), "Authentication credentials were not provided.")
@@ -245,7 +242,7 @@ class GetUserTest(APITestCase):
         Ensure the API call returns an error if the user does not exist.
         """
 
-        url = reverse("userRetriever", kwargs={"id": 1000})
+        url = reverse("userRetriever", kwargs={"pk": 1000})
         headers = {
             "Authorization": f"Token {self.token}",
         }
@@ -271,12 +268,12 @@ class UpdateUserTest(APITestCase):
         Ensure the API call updates the user information.
         """
 
-        url = reverse("userRetriever", kwargs={"id": self.user.pk})
+        url = reverse("userRetriever", kwargs={"pk": self.user.pk})
         dataPut = {
             "username": "newUsername",
             "first_name": "newFirstName",
             "last_name": "newLastName",
-            "birthDate": "1998-10-06",
+            "birthDate": "2000-10-06",
             "email": "newUsername@gmail.com",
         }
         headers = {
@@ -290,8 +287,8 @@ class UpdateUserTest(APITestCase):
         self.assertEqual(message.get("username"), "newUsername")
         self.assertEqual(message.get("first_name"), "newFirstName")
         self.assertEqual(message.get("last_name"), "newLastName")
-        self.assertEqual(message.get("birthDate"), "1998-10-06")
-        self.assertEqual(message.get("email"), "newUsername@gmail.com")
+        self.assertEqual(message.get("birthDate"), "2000-10-06")
+        self.assertEqual(message.get("email"), self.user.email)
 
         # Partial PUT
         dataPut2 = {"username": "newUsername2"}
@@ -299,10 +296,10 @@ class UpdateUserTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         message = json.loads(response.content.decode("utf-8"))
         self.assertEqual(message.get("id"), self.user.pk)
-        self.assertEqual(message.get("username"), "newUsername")
-        self.assertEqual(message.get("first_name"), self.user.first_name)
-        self.assertEqual(message.get("last_name"), self.user.last_name)
-        self.assertEqual(message.get("birthDate"), self.user.birthDate)
+        self.assertEqual(message.get("username"), "newUsername2")
+        self.assertEqual(message.get("first_name"), "newFirstName")  # Previous updated value
+        self.assertEqual(message.get("last_name"), "newLastName")  # Previous updated value
+        self.assertEqual(message.get("birthDate"), "2000-10-06")  # Previous updated value
         self.assertEqual(message.get("email"), self.user.email)
 
         # Partial PATCH
@@ -314,9 +311,9 @@ class UpdateUserTest(APITestCase):
         message = json.loads(response.content.decode("utf-8"))
         self.assertEqual(message.get("id"), self.user.pk)
         self.assertEqual(message.get("username"), "newUsername")
-        self.assertEqual(message.get("first_name"), self.user.first_name)
-        self.assertEqual(message.get("last_name"), self.user.last_name)
-        self.assertEqual(message.get("birthDate"), self.user.birthDate)
+        self.assertEqual(message.get("first_name"), "newFirstName")  # Previous updated value
+        self.assertEqual(message.get("last_name"), "newLastName")  # Previous updated value
+        self.assertEqual(message.get("birthDate"), "2000-10-06")  # Previous updated value
         self.assertEqual(message.get("email"), self.user.email)
 
         # Complete PATCH
@@ -335,14 +332,14 @@ class UpdateUserTest(APITestCase):
         self.assertEqual(message.get("first_name"), "newFirstName2")
         self.assertEqual(message.get("last_name"), "newLastName2")
         self.assertEqual(message.get("birthDate"), "1998-10-06")
-        self.assertEqual(message.get("email"), "newUsername2@gmail.com")
+        self.assertEqual(message.get("email"), self.user.email)
 
     def testEmailCannotBeUpdated(self):
         """
         Ensure the API call returns an error if the user tries to update the email.
         """
 
-        url = reverse("userRetriever", kwargs={"id": self.user.pk})
+        url = reverse("userRetriever", kwargs={"pk": self.user.pk})
         data = {"email": "perdigon@gmail.com"}
         headers = {
             "Authorization": f"Token {self.token}",
@@ -358,7 +355,7 @@ class UpdateUserTest(APITestCase):
         Ensure the API call returns an error if the user is not authenticated.
         """
 
-        url = reverse("userRetriever", kwargs={"id": self.user.pk})
+        url = reverse("userRetriever", kwargs={"pk": self.user.pk})
         data = {"username": "newUsername"}
         responsePut = self.client.put(url, data)
         self.assertEqual(responsePut.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -375,7 +372,7 @@ class UpdateUserTest(APITestCase):
         Ensure the API call returns an error if the user does not exist.
         """
 
-        url = reverse("userRetriever", kwargs={"id": 1000})
+        url = reverse("userRetriever", kwargs={"pk": 1000})
         data = {"username": "newUsername"}
         headers = {
             "Authorization": f"Token {self.token}",
@@ -398,7 +395,7 @@ class UpdateUserTest(APITestCase):
         user2 = User.objects.create(
             username="test2", birthDate="1998-10-06", password="test2", email="test2@gmail.com"
         )
-        url = reverse("userRetriever", kwargs={"id": user2.pk})
+        url = reverse("userRetriever", kwargs={"pk": user2.pk})
         data = {"username": "newUsername"}
         headers = {"Authorization": f"Token {self.token}"}
         responsePut = self.client.put(url, data, headers=headers)  # type: ignore
@@ -426,7 +423,7 @@ class DeleteUserTest(APITestCase):
         )
         token, _ = Token.objects.get_or_create(user=user)
 
-        url = reverse("userRetriever", kwargs={"id": user.pk})
+        url = reverse("userRetriever", kwargs={"pk": user.pk})
         headers = {
             "Authorization": f"Token {token}",
         }
@@ -441,7 +438,7 @@ class DeleteUserTest(APITestCase):
             username="test", birthDate="1998-10-06", password="test", email="test@gmail.com"
         )
 
-        url = reverse("userRetriever", kwargs={"id": user.pk})
+        url = reverse("userRetriever", kwargs={"pk": user.pk})
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         message = json.loads(response.content.decode("utf-8"))
@@ -456,14 +453,14 @@ class DeleteUserTest(APITestCase):
         )
         token, _ = Token.objects.get_or_create(user=user)
 
-        url = reverse("userRetriever", kwargs={"id": 1000})
+        url = reverse("userRetriever", kwargs={"pk": 1000})
         headers = {
             "Authorization": f"Token {token}",
         }
         response = self.client.delete(url, headers=headers)  # type: ignore
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         message = json.loads(response.content.decode("utf-8"))
-        self.assertEqual(message.get("detail"), "Invalid token.")
+        self.assertEqual(message.get("detail"), "Not found.")
 
     def testUserDeletedNotExists(self):
         """
@@ -474,12 +471,12 @@ class DeleteUserTest(APITestCase):
         )
         token, _ = Token.objects.get_or_create(user=user)
 
-        url = reverse("userRetriever", kwargs={"id": 1000})
+        url = reverse("userRetriever", kwargs={"pk": 1000})
         headers = {
             "Authorization": f"Token {token}",
         }
         response = self.client.delete(url, headers=headers)  # type: ignore
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         message = json.loads(response.content.decode("utf-8"))
         self.assertEqual(message.get("detail"), "Not found.")
 
@@ -495,7 +492,7 @@ class DeleteUserTest(APITestCase):
             username="test2", birthDate="1998-10-06", password="test2", email="test2@gmail.com"
         )
 
-        url = reverse("userRetriever", kwargs={"id": user2.pk})
+        url = reverse("userRetriever", kwargs={"pk": user2.pk})
         headers = {
             "Authorization": f"Token {token}",
         }

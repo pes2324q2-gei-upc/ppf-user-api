@@ -1,4 +1,3 @@
-from urllib import response
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
@@ -43,11 +42,8 @@ class CreateUserTest(APITestCase):
         }
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            user = None
-        self.assertIsNotNone(user)
+        user_exists = User.objects.filter(username=username).exists()
+        self.assertTrue(user_exists)
 
         message = json.loads(response.content.decode("utf-8"))
         self.assertEqual(message.get("username"), username)
@@ -91,7 +87,7 @@ class CreateUserTest(APITestCase):
         message = json.loads(response.content.decode("utf-8"))
         self.assertIn("Email already exists.", message.get("non_field_errors"))
 
-    def incorrectPassword(self):
+    def testIncorrectPassword(self):
         """
         Ensure the API call returns an error if the password is incorrect.
         """
@@ -107,7 +103,7 @@ class CreateUserTest(APITestCase):
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         message = json.loads(response.content.decode("utf-8"))
-        self.assertEqual(message.get("non_field_errors"), "Passwords must match.")
+        self.assertIn("Passwords must match.", message.get("non_field_errors"))
 
 
 class ListUserTest(APITestCase):

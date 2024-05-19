@@ -109,7 +109,7 @@ class CreateUserTest(APITestCase):
         message = json.loads(response.content.decode("utf-8"))
         self.assertIn("Passwords must match.", message.get("non_field_errors"))
 
-    def pointsCannotBeSet(self):
+    def testPointsCannotBeSet(self):
         """
         Ensure the API call returns an error if the points are set.
         """
@@ -125,11 +125,10 @@ class CreateUserTest(APITestCase):
         }
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        message = json.loads(response.content.decode("utf-8"))
         userCreated = User.objects.get(username="distintUser")
         token, _ = Token.objects.get_or_create(user=userCreated)
 
-        urlGet = reverse("userRetriever", kwargs={"id": userCreated.pk})
+        urlGet = reverse("userRetriever", kwargs={"pk": userCreated.pk})
         headers = {
             "Authorization": f"Token {token}",
         }

@@ -369,8 +369,22 @@ class SendFCMNotification(generics.CreateAPIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        priority = request.data["priority"]
+
+        # if the field is set but not valid return an error
+        if priority is not None and priority not in PushController.FCMPriority:
+            return Response(
+                data={"error": "Invalid priority value, when specified must be 'high' or 'normal'"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        # if the field is not set, set it to normal
+        elif priority is None:
+            priority = PushController.FCMPriority.NORMAL
+        else:
+            priority = PushController.FCMPriority(priority)
+
         try:
-            pushController.notifyTo(user, request.data["title"], request.data["body"])
+            pushController.notifyTo(user, request.data["title"], request.data["body"], priority)
         except FirebaseError as e:
             return Response(data={"error": "Error sending the FCM notification"}, status=e.code)
         return Response(status=status.HTTP_201_CREATED)

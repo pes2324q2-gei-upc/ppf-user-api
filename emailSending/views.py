@@ -37,7 +37,7 @@ class PasswordResetRequestView(GenericAPIView):
             token = default_token_generator.make_token(user)
             # User ID byte encoded in base64 to pass it in the URL
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            reset_url = f"http://localhost:8081/reset-password-page/?uid={uid}&token={token}"
+            reset_url = f"http://18.132.64.236:8081/reset-password-page/?uid={uid}&token={token}"
 
             subject = "Password Reset Requested"
             message = f"""
@@ -45,7 +45,7 @@ class PasswordResetRequestView(GenericAPIView):
 
             You requested a password reset. Click the link below to reset your password:
 
-            {reset_url}
+            <a href="{reset_url}">Reset your password</a>
 
             If you did not make this request, you can ignore this email.
 

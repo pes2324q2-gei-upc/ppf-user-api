@@ -3,7 +3,7 @@
 """
 
 from django.conf import settings
-from django.core.mail import send_mail, EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from rest_framework import status
@@ -64,23 +64,6 @@ class PasswordResetRequestView(GenericAPIView):
             msg = EmailMultiAlternatives(subject, text_content, from_email, [email])
             msg.attach_alternative(html_content, "text/html")
             msg.send()
-
-            # subject = "Password Reset Requested"
-            # message = f"""
-            # Hi {user.username},
-
-            # You requested a password reset. Click the link below to reset your password:
-
-            # <a href="{reset_url}">Reset your password</a>
-
-            # If you did not make this request, you can ignore this email.
-
-            # Thanks,
-            # PowerPathFinder Team
-            # """
-            # from_email = settings.EMAIL_HOST_USER
-
-            # send_mail(subject, message, from_email, [email], fail_silently=False)
 
             return Response({"message": "Password reset link sent."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

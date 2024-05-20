@@ -109,16 +109,16 @@
                     return;
                 }
 
-                const response = await fetch('http://your-api-url/reset-password/confirm/', {
+                const response = await fetch('http://localhost:8081/reset-password/confirm/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
+                        new_password: newPassword,
+                        new_password_confirm: confirmPassword,
                         uidb64: uid,
                         token: token,
-                        new_password: newPassword,
-                        confirmPassword: confirmPassword
                     })
                 });
 

@@ -2,6 +2,7 @@
     This module provides an API endpoint for user login.
 """
 
+import re
 from django.contrib.auth import authenticate
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -77,21 +78,21 @@ class GoogleLoginAPIView(APIView):
     The class that logs in a user using Google credentials.
     """
     @swagger_auto_schema(
-        request_body=UserRegisterSerializer,
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "email": openapi.Schema(type=openapi.TYPE_STRING),
+                "Display name": openapi.Schema(type=openapi.TYPE_STRING),
+                "photoUrl": openapi.Schema(type=openapi.TYPE_STRING),
+            },
+            required=["email", "Display name", "photoUrl"],
+        ),
         responses={
             200: openapi.Response(
                 description="Token successfully created or updated",
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={"token": openapi.Schema(
-                        type=openapi.TYPE_STRING)},
-                ),
-            ),
-            401: openapi.Response(
-                description="Unauthorized or invalid credentials",
-                schema=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={"error": openapi.Schema(
                         type=openapi.TYPE_STRING)},
                 ),
             ),

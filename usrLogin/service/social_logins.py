@@ -28,11 +28,18 @@ def get_or_create_from_google(data):
     user = User.objects.filter(email=data.get(
         "email"), typeOfLogin="google").first()
     if user:
-        # User already exists, return the user
         return user
     else:
+        data.update({"username": data.get("email").split("@")[0]})
         data.update({"typeOfLogin": "google"})
-        # User does not exist, create a new user
+        data.update({"first_name": data.get("Display name").split(" ")[0]})
+        data.update({"last_name": data.get("Display name").split(" ")[1]})
+        data.update({"email": data.get("email")})
+        data.update({"password": "google"})
+        data.update({"password2": "google"})
+        data.update({"birthDate": "2000-01-01"})
+        data.update({"profileImage": data.get("Photo URL")})
+
         serializedUser = UserRegisterSerializer(
             data=data)
         print(serializedUser.is_valid())

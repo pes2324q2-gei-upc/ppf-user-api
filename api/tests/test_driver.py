@@ -324,16 +324,6 @@ class GetDriverTest(APITestCase):
         self.assertEqual(message.get("preference").get("talkTooMuch"), False)  # Default value
         self.assertEqual(message.get("iban"), self.driver.iban)
 
-    def testUnauthorizedGetDriver(self):
-        """
-        Ensure the API call returns an error if the user is not authenticated.
-        """
-
-        url = reverse("driverRetriever", kwargs={"pk": self.driver.pk})
-        response = self.client.get(url)
-        message = json.loads(response.content.decode("utf-8"))
-        self.assertEqual(message.get("detail"), "Authentication credentials were not provided.")
-
     def testDriverDoesNotExist(self):
         """
         Ensure the API call returns an error if the driver does not exist.

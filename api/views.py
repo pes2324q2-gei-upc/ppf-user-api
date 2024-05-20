@@ -302,6 +302,7 @@ class UserValuationList(generics.ListAPIView):
 
 class DriverToUser(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
     def post(self, request):
         try:
@@ -341,6 +342,7 @@ class DriverToUser(APIView):
 
 class UserToDriver(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
     def post(self, request):
         try:

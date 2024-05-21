@@ -57,3 +57,4 @@ boto3
 django-storages==1.14.0
 pillow
 psycopg2-binary
+firebase-admin==6.5.0

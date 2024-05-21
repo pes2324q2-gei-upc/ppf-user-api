@@ -2,19 +2,16 @@
 This document contains all the serializers that will be used by the api
 """
 
-from django.http import JsonResponse
-from . import serializers
-from requests.exceptions import HTTPError
-from rest_framework.response import Response
-from rest_framework import generics, permissions, status, views
-from django.db import models
-from rest_framework import serializers
-
-
-from common.models.user import Driver, User, ChargerType, Preference, Report
-
-from common.models.valuation import Valuation
 from common.models.route import Route
+from common.models.user import ChargerType, Driver, Preference, Report, User
+from common.models.valuation import Valuation
+from django.db import models
+from django.http import JsonResponse
+from requests.exceptions import HTTPError
+from rest_framework import generics, permissions, serializers, status, views
+from rest_framework.response import Response
+
+# from . import serializers
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -97,6 +94,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     password2 = serializers.CharField(max_length=50, write_only=True)
     # profileImage = serializers.ImageField(use_url=True)
+    typeOfLogin = serializers.CharField(max_length=50, write_only=True)
 
     class Meta:
         """
@@ -139,6 +137,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop("password2")  # Remove password2 from saving
+        validated_data.pop("typeOfLogin")  # Remove typeOfLogin from saving
         password = validated_data.pop("password")
         user = User.objects.create_user(**validated_data)
         user.set_password(password)

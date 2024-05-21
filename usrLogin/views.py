@@ -10,7 +10,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .service.social_logins import get_or_create_from_google, ger_or_create_from_facebook, generate_token
-
+from common.models.user import User
 from .serializers import UserLoginSerializer
 from api.serializers import UserRegisterSerializer
 
@@ -57,6 +57,7 @@ class LoginAPIView(APIView):
         - Response: HTTP response object containing a token or error message.
         """
         serializer = UserLoginSerializer(data=request.data)
+
         if serializer.is_valid():
             email = serializer.validated_data.get("email")
             password = serializer.validated_data.get("password")
@@ -64,6 +65,12 @@ class LoginAPIView(APIView):
             user = authenticate(username=email, password=password)
 
             if user:
+                # Check if the user is a base user (not a social login user)
+                typeOfLogin = User.objects.filter(
+                    email=email).first().typeOfLogin
+                if typeOfLogin != "base":
+                    return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
                 generatedToken = generate_token(user)
                 return Response({"token": generatedToken.key})
             # If user not found means that the credentials are invalid or

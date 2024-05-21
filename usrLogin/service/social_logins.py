@@ -1,8 +1,9 @@
 from operator import is_
-from common.models.user import User
-from rest_framework.authtoken.models import Token
+
 from api.serializers import UserRegisterSerializer
+from common.models.user import User
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 
 
@@ -30,10 +31,16 @@ def get_or_create_from_google(data):
     if user:
         return user
     else:
-        data.update({"username": data.get("email").split("@")[0]})
+        data.update({"username": str(data.get("email")).split("@")[0]})
         data.update({"typeOfLogin": "google"})
-        data.update({"first_name": data.get("Display name").split(" ")[0]})
-        data.update({"last_name": data.get("Display name").split(" ")[1]})
+        data.update(
+            {"first_name": str(data.get("Display name")).split(" ")[0]})
+        last_name = str(data.get("Display name")).split(" ")[1:]
+        if len(last_name) < 1:
+            last_name = "google"
+        else:
+            last_name = last_name[0]
+        data.update({"last_name": last_name})
         data.update({"email": data.get("email")})
         data.update({"password": "google"})
         data.update({"password2": "google"})

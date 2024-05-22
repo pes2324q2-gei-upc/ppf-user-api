@@ -19,6 +19,7 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from yaml import serialize
 
 from .serializers import (
     DriverRegisterSerializer,
@@ -372,12 +373,13 @@ class UserToDriver(APIView):
                 autonomy=data.get('autonomy', 0),
                 iban=data.get('iban', ''),
                 preference=preference,
-                pasword=user.password
             )
             driver.chargerTypes.set(charger_types_objs)
+            driver.password = user.password
             driver.save()
-            print("driver saved")
 
-            return Response({'message': 'You are now a driver.'}, status=status.HTTP_200_OK)
+            print("driver saved")
+            serializer = DriverSerializer(driver)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

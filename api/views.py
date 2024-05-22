@@ -7,7 +7,7 @@ from time import process_time_ns
 from urllib import request
 
 from common.models.route import Route
-from common.models.user import ChargerType, Driver, Report, User
+from common.models.user import ChargerType, Driver, Preference, Report, User
 from common.models.valuation import Valuation
 from django.shortcuts import get_object_or_404
 
@@ -318,6 +318,7 @@ class DriverToUser(APIView):
                 "createdAt": driver.createdAt,
                 "birthDate": driver.birthDate,
                 "points": driver.points,
+                "password": driver.password
             }
             driver.delete()
 
@@ -332,6 +333,7 @@ class DriverToUser(APIView):
                 points=driver_data['points'],
                 profileImage=driver_data['profileImage'],
                 createdAt=driver_data['createdAt'],
+                password=driver_data['password'],
             )
             serialaizer = UserSerializer(user)
 
@@ -352,6 +354,8 @@ class UserToDriver(APIView):
             charger_types = data.get('chargerTypes', [])
             charger_types_objs = [ChargerType.objects.get(
                 chargerType=ct) for ct in charger_types]
+            preferences = data.get('preference', {})
+            preference = Preference.objects.create(**preferences)
 
             driver = Driver.objects.create(
                 id=request.user.id,
@@ -366,7 +370,9 @@ class UserToDriver(APIView):
                 dni=data['dni'],
                 driverPoints=data.get('driverPoints', 0),
                 autonomy=data.get('autonomy', 0),
-                iban=data.get('iban', '')
+                iban=data.get('iban', ''),
+                preference=preference,
+                pasword=user.password
             )
             driver.chargerTypes.set(charger_types_objs)
             driver.save()

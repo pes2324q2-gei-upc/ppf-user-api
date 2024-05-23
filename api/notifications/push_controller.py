@@ -33,7 +33,10 @@ class PushController:
             notification=Notification(title="Validity check"),
             android=AndroidConfig(priority="high"),
         )
-        send(message)
+        send(
+            message,
+            True,
+        )
         t.save()
 
     def notifyTo(

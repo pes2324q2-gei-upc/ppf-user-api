@@ -344,8 +344,10 @@ class RegisterFCMToken(APIView):
             # Retrieve the fcm token
             pushController.addToken(user, token)
         except FirebaseError as e:
+            if isinstance(e.http_response, Response):
+                return e.http_response
             return Response(
-                data={"error": "Error creating the FCM token"},
+                data={"error": e.cause},
                 status=HTTP_500_INTERNAL_SERVER_ERROR,
             )
         return Response(status=HTTP_201_CREATED)

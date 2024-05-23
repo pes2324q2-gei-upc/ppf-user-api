@@ -37,6 +37,7 @@ class PushController:
             message,
             True,
         )
+        # Only saved if no exception is raised
         t.save()
 
     def notifyTo(

@@ -59,8 +59,9 @@ class LoginAPIView(APIView):
         serializer = UserLoginSerializer(data=request.data)
 
         if serializer.is_valid():
-            email = serializer.validated_data.get("email")
-            password = serializer.validated_data.get("password")
+            email = serializer.validated_data.get("email")  # type: ignore
+            password = serializer.validated_data.get(
+                "password")  # type: ignore
             # authenticate use by default the username field, but we are using the email field
             user = authenticate(username=email, password=password)
 

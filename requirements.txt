@@ -6,6 +6,7 @@ cachetools==5.3.3
 certifi==2024.2.2
 charset-normalizer==3.3.2  
 colorama==0.4.6
+coverage==7.5.1
 dill==0.3.8
 Django==5.0.3
 django-environ==0.11.2     
@@ -31,6 +32,8 @@ platformdirs==4.2.0
 pluggy==1.4.0
 proto-plus==1.23.0
 protobuf==4.25.3
+psycopg==3.1.19
+psycopg2-binary==2.9.9
 pyasn1==0.5.1
 pyasn1-modules==0.3.0
 pylint==3.1.0
@@ -54,3 +57,4 @@ urllib3==2.2.1
 boto3
 django-storages==1.14.0
 pillow
+psycopg2-binary

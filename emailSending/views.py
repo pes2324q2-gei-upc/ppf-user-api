@@ -37,7 +37,7 @@ class PasswordResetRequestView(GenericAPIView):
             token = default_token_generator.make_token(user)
             # User ID byte encoded in base64 to pass it in the URL
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            reset_url = f"http://localhost:8081/reset-password-page/?uid={uid}&token={token}"  # TODO change to deploy IP 18.132.64.236 (and html too)
+            reset_url = f"http://18.132.64.236:8081/reset-password-page/?uid={uid}&token={token}"
 
             # Send email with html format and if no supported, send text format
             subject = "Password Reset Requested"

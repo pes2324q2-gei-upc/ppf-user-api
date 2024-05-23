@@ -325,7 +325,7 @@ class RegisterFCMToken(APIView):
 
     serializer_class = FCMTokenSerializer
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
         request_body=FCMTokenSerializer,
@@ -363,7 +363,10 @@ class SendFCMNotification(APIView):
 
     serializer_class = FCMessageSerializer
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [
+        IsAuthenticated,
+        # IsAdminUser,
+    ]
 
     @swagger_auto_schema(
         request_body=FCMessageSerializer,

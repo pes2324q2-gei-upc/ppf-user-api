@@ -34,6 +34,6 @@ urlpatterns = [
         name="userValuationList",
     ),
     path("users/<int:pk>/avatar", views.UserModifyAvatar.as_view(), name="userModifyAvatar"),
-    path("push/register/", views.RegisterFCMToken.as_view(), name="registerFCMToken"),
-    path("push/notify/", views.SendFCMNotification.as_view(), name="notifyUser"),
+    path("push/register/<int:pk>", views.RegisterFCMToken.as_view(), name="registerFCMToken"),
+    path("push/notify/<int:pk>", views.SendFCMNotification.as_view(), name="notifyUser"),
 ]

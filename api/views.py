@@ -8,18 +8,31 @@ from common.models.user import Driver, Report, User
 from common.models.valuation import Valuation
 from django.shortcuts import get_object_or_404
 from firebase_admin.exceptions import FirebaseError
-
-# from rest_framework.views import APIView
-from rest_framework import generics, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.generics import (
+    CreateAPIView,
+    GenericAPIView,
+    ListAPIView,
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+    UpdateAPIView,
+)
 from rest_framework.parsers import FormParser, MultiPartParser
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.status import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_403_FORBIDDEN,
+    HTTP_500_INTERNAL_SERVER_ERROR,
+)
 
 from .serializers import (
     DriverRegisterSerializer,
     DriverSerializer,
+    FCMessageSerializer,
+    FCMTokenSerializer,
     ReportSerializer,
     UserImageUpdateSerializer,
     UserRegisterSerializer,
@@ -31,7 +44,7 @@ from .serializers import (
 pushController = PushController()
 
 
-class UserListCreate(generics.ListCreateAPIView):
+class UserListCreate(ListCreateAPIView):
     """
     The class that will generate a list of all the users and create if needed
 
@@ -51,7 +64,7 @@ class UserListCreate(generics.ListCreateAPIView):
         return super().get_serializer_class()
 
 
-class UserModifyAvatar(generics.UpdateAPIView):
+class UserModifyAvatar(UpdateAPIView):
     """
     The class that will modify the avatar of a user
 
@@ -71,12 +84,12 @@ class UserModifyAvatar(generics.UpdateAPIView):
         if instance.id != request.user.id:
             return Response(
                 data={"error": "You can only update your own user account."},
-                status=status.HTTP_403_FORBIDDEN,
+                status=HTTP_403_FORBIDDEN,
             )
         return super().update(request, *args, **kwargs)
 
 
-class DriverListCreate(generics.ListCreateAPIView):
+class DriverListCreate(ListCreateAPIView):
     """
     The class that will generate a list of all the drivers and create if needed
 
@@ -96,7 +109,7 @@ class DriverListCreate(generics.ListCreateAPIView):
         return super().get_serializer_class()
 
 
-class DriverRetriever(generics.RetrieveUpdateDestroyAPIView):
+class DriverRetriever(RetrieveUpdateDestroyAPIView):
     """
     The Retriever for the Driver class
 
@@ -116,7 +129,7 @@ class DriverRetriever(generics.RetrieveUpdateDestroyAPIView):
         if instance.id != request.user.id:
             return Response(
                 data={"error": "You can only delete your own user account."},
-                status=status.HTTP_403_FORBIDDEN,
+                status=HTTP_403_FORBIDDEN,
             )
 
         routes = Route.objects.filter(passengers=instance)
@@ -131,12 +144,12 @@ class DriverRetriever(generics.RetrieveUpdateDestroyAPIView):
         if instance.id != request.user.id:
             return Response(
                 data={"error": "You can only update your own user account."},
-                status=status.HTTP_403_FORBIDDEN,
+                status=HTTP_403_FORBIDDEN,
             )
         return super().update(request, *args, **kwargs)
 
 
-class UserRetriever(generics.RetrieveUpdateDestroyAPIView):
+class UserRetriever(RetrieveUpdateDestroyAPIView):
     """
     The Retriever for the User class
 
@@ -158,7 +171,7 @@ class UserRetriever(generics.RetrieveUpdateDestroyAPIView):
         if instance.id != request.user.id:
             return Response(
                 data={"error": "You can only delete your own user account."},
-                status=status.HTTP_403_FORBIDDEN,
+                status=HTTP_403_FORBIDDEN,
             )
         routes = Route.objects.filter(passengers=instance)
         for route in routes:
@@ -171,12 +184,12 @@ class UserRetriever(generics.RetrieveUpdateDestroyAPIView):
         if instance.id != request.user.id:
             return Response(
                 data={"error": "You can only update your own user account."},
-                status=status.HTTP_403_FORBIDDEN,
+                status=HTTP_403_FORBIDDEN,
             )
         return super().update(request, *args, **kwargs)
 
 
-class ReportListCreate(generics.ListCreateAPIView):
+class ReportListCreate(ListCreateAPIView):
     """
     The class that will generate a list of all the reports and create if needed
 
@@ -190,7 +203,7 @@ class ReportListCreate(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class ReportRetriever(generics.RetrieveUpdateDestroyAPIView):
+class ReportRetriever(RetrieveUpdateDestroyAPIView):
     """
     The Retriever for the Report class
 
@@ -210,7 +223,7 @@ class ReportRetriever(generics.RetrieveUpdateDestroyAPIView):
         if instance.reporter.id != request.user.id:
             return Response(
                 data={"error": "You can only delete your own report."},
-                status=status.HTTP_403_FORBIDDEN,
+                status=HTTP_403_FORBIDDEN,
             )
         return super().delete(request, *args, **kwargs)
 
@@ -220,12 +233,12 @@ class ReportRetriever(generics.RetrieveUpdateDestroyAPIView):
         if instance.reporter.id != request.user.id:
             return Response(
                 data={"error": "You can only update your own report."},
-                status=status.HTTP_403_FORBIDDEN,
+                status=HTTP_403_FORBIDDEN,
             )
         return super().update(request, *args, **kwargs)
 
 
-class UserIdRetriever(generics.GenericAPIView):
+class UserIdRetriever(GenericAPIView):
     """
     The class for retrieving the user id from the request
 
@@ -248,10 +261,10 @@ class UserIdRetriever(generics.GenericAPIView):
             Response: The user id
         """
         user_id = request.user.id
-        return Response(data={"user_id": user_id}, status=status.HTTP_200_OK)
+        return Response(data={"user_id": user_id}, status=HTTP_200_OK)
 
 
-class ValuationListCreate(generics.CreateAPIView):
+class ValuationListCreate(CreateAPIView):
     """
     The class that will generate a list of all the valuations and create if needed
 
@@ -265,7 +278,7 @@ class ValuationListCreate(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class MyValuationList(generics.ListAPIView):
+class MyValuationList(ListAPIView):
     """
     The class that will generate all the valuations of the user logged in
 
@@ -281,7 +294,7 @@ class MyValuationList(generics.ListAPIView):
         return Valuation.objects.filter(receiver=self.request.user)
 
 
-class UserValuationList(generics.ListAPIView):
+class UserValuationList(ListAPIView):
     """
     The class that will generate all the valuations of a user
 
@@ -298,7 +311,11 @@ class UserValuationList(generics.ListAPIView):
         return Valuation.objects.filter(receiver=user)
 
 
-class RegisterFCMToken(generics.CreateAPIView):
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework.views import APIView
+
+
+class RegisterFCMToken(APIView):
     """
     The class that will register the FCM token of the user
 
@@ -306,24 +323,35 @@ class RegisterFCMToken(generics.CreateAPIView):
         CreateAPIView: This creates a new FCM token and pass it as json for the response
     """
 
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = FCMTokenSerializer
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
-    def create(self, request, *args, **kwargs):
-        # Retrieve the user
-        user = request.user
-        # Retrieve the fcm token
+    @swagger_auto_schema(
+        request_body=FCMTokenSerializer,
+        operation_summary="Register a FCM token for a user",
+        operation_description="Register a FCM token for a user",
+        responses={201: "Created", 400: "Bad Request", 403: "Forbidden"},
+    )
+    def post(self, request, *args, **kwargs):
+        user = get_object_or_404(User, pk=kwargs["pk"])
+
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        token: str = serializer.validated_data.get("token")  # type: ignore
         try:
-            pushController.addToken(user, request.data["token"])
+            # Retrieve the fcm token
+            pushController.addToken(user, token)
         except FirebaseError as e:
-            return Response(data={"error": "Error creating the FCM token"}, status=e.code)
+            return Response(
+                data={"error": "Error creating the FCM token"},
+                status=HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        return Response(status=HTTP_201_CREATED)
 
-        return Response(status=status.HTTP_201_CREATED)
 
-
-class SendFCMNotification(generics.CreateAPIView):
+class SendFCMNotification(APIView):
     """
     The class that will send a FCM notification to a user
 
@@ -331,60 +359,35 @@ class SendFCMNotification(generics.CreateAPIView):
         CreateAPIView: This creates a new FCM notification and pass it as json for the response
     """
 
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = FCMessageSerializer
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
-    def validate(self, request):
-        if request.data["title"] is None or request.data["body"] is None:
-            return Response(
-                data={"error": "Title and body are required"}, status=status.HTTP_400_BAD_REQUEST
-            )
-        if request.data["title"] == "" or request.data["body"] == "":
-            return Response(
-                data={"error": "Title and body cannot be empty"}, status=status.HTTP_400_BAD_REQUEST
-            )
-        return None
+    @swagger_auto_schema(
+        request_body=FCMessageSerializer,
+        operation_summary="Send a FCM notification to a user",
+        operation_description="Send a FCM notification to a user",
+        responses={201: "Sent", 400: "Bad Request", 403: "Forbidden"},
+    )
+    def post(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
 
-    def create(self, request, *args, **kwargs):
-        # Retrieve the user
-        userId: str = request.data["user"]
-        if userId is None:
-            return Response(
-                data={"error": "User id is required"}, status=status.HTTP_400_BAD_REQUEST
-            )
-        user: User = get_object_or_404(User, pk=userId)
-
-        # Retrieve the fcm token
-        validation = self.validate(request)
-        if validation is not None:
-            return validation
-
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
         # Check if user has a device token
         token = pushController.token(user)
         if token is None:
             return Response(
                 data={"error": "User does not have a device token"},
-                status=status.HTTP_403_FORBIDDEN,
+                status=HTTP_403_FORBIDDEN,
             )
 
-        priority = request.data["priority"]
-
-        # if the field is set but not valid return an error
-        if priority is not None and priority not in PushController.FCMPriority:
-            return Response(
-                data={"error": "Invalid priority value, when specified must be 'high' or 'normal'"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        # if the field is not set, set it to normal
-        elif priority is None:
-            priority = PushController.FCMPriority.NORMAL
-        else:
-            priority = PushController.FCMPriority(priority)
+        priority: str = serializer.validated_data.get("priority", "normal")  # type: ignore
+        title: str = serializer.validated_data.get("title")  # type: ignore
+        body: str = serializer.validated_data.get("body")  # type: ignore
 
         try:
-            pushController.notifyTo(user, request.data["title"], request.data["body"], priority)
+            pushController.notifyTo(user, title, body, PushController.FCMPriority(priority))
         except FirebaseError as e:
             return Response(data={"error": "Error sending the FCM notification"}, status=e.code)
-        return Response(status=status.HTTP_201_CREATED)
+        return Response(status=HTTP_201_CREATED)

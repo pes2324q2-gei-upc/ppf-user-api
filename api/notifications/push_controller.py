@@ -1,3 +1,4 @@
+from email import message
 from enum import Enum
 
 from common.models.fcm import FCMToken
@@ -27,14 +28,12 @@ class PushController:
         rise
         """
         t = FCMToken(user=user, token=token)
-        send(
-            dry_run=True,
-            message=Message(
-                token=t,
-                notification=Notification(title="Validity check"),
-                android=AndroidConfig(priority="high"),
-            ),
+        message = Message(
+            token=t.token,
+            notification=Notification(title="Validity check"),
+            android=AndroidConfig(priority="high"),
         )
+        send(message)
         t.save()
 
     def notifyTo(

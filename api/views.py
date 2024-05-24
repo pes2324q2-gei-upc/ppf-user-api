@@ -2,13 +2,7 @@
 This file contains all the views to implement the api
 """
 
-from . import serializers
-from requests.exceptions import HTTPError
-from rest_framework import generics, permissions, status, views
-from django.http import JsonResponse
-from re import M
-from time import process_time_ns
-from urllib import request
+from rest_framework import generics, status
 
 from common.models.route import Route
 from common.models.user import ChargerType, Driver, Report, User

@@ -2,7 +2,6 @@
     This module provides an API endpoint for user login.
 """
 
-import re
 from django.contrib.auth import authenticate
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -12,7 +11,6 @@ from rest_framework.views import APIView
 from .service.social_logins import get_or_create_from_google, ger_or_create_from_facebook, generate_token
 from common.models.user import User
 from .serializers import UserLoginSerializer
-from api.serializers import UserRegisterSerializer
 
 # Create your views here.
 

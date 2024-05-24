@@ -2,11 +2,6 @@
 This document contains all the serializers that will be used by the api
 """
 
-from django.http import JsonResponse
-from . import serializers
-from requests.exceptions import HTTPError
-from rest_framework.response import Response
-from rest_framework import generics, permissions, status, views
 from common.models.route import Route
 from common.models.user import ChargerType, Driver, Preference, Report, User
 from common.models.valuation import Valuation
@@ -456,12 +451,3 @@ class ValuationRegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"error": str(e)})
 
         return valuation
-
-
-class SocialSerializer(serializers.Serializer):
-    """
-    Serializer which accepts an OAuth2 access token and provider.
-    """
-    provider = serializers.CharField(max_length=255, required=True)
-    access_token = serializers.CharField(
-        max_length=4096, required=True, trim_whitespace=True)

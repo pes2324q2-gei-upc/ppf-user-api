@@ -2,9 +2,16 @@
 This file contains all the views to implement the api    
 """
 
+<<<<<<< HEAD
 from api.notifications.push_controller import PushController
+=======
+from re import M
+from time import process_time_ns
+from urllib import request
+
+>>>>>>> origin/development
 from common.models.route import Route
-from common.models.user import Driver, Report, User
+from common.models.user import ChargerType, Driver, Report, User
 from common.models.valuation import Valuation
 from django.shortcuts import get_object_or_404
 from firebase_admin.exceptions import FirebaseError
@@ -19,6 +26,7 @@ from rest_framework.generics import (
     UpdateAPIView,
 )
 from rest_framework.parsers import FormParser, MultiPartParser
+<<<<<<< HEAD
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -27,6 +35,11 @@ from rest_framework.status import (
     HTTP_403_FORBIDDEN,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
+=======
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+>>>>>>> origin/development
 
 from .serializers import (
     DriverRegisterSerializer,
@@ -121,7 +134,13 @@ class DriverRetriever(RetrieveUpdateDestroyAPIView):
     queryset = Driver.objects.all()
     serializer_class = DriverSerializer
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            self.permission_classes = [AllowAny]
+        else:
+            self.permission_classes = [IsAuthenticated]
+        return super().get_permissions()
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -311,6 +330,7 @@ class UserValuationList(ListAPIView):
         return Valuation.objects.filter(receiver=user)
 
 
+<<<<<<< HEAD
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 
@@ -396,3 +416,80 @@ class SendFCMNotification(APIView):
         except FirebaseError as e:
             return Response(data={"error": "Error sending the FCM notification"}, status=e.code)
         return Response(status=HTTP_201_CREATED)
+=======
+class DriverToUser(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request):
+        try:
+            driver = get_object_or_404(Driver, id=request.user.id)
+            driver_data = {
+                "dni": driver.dni,
+                "driverPoints": driver.driverPoints,
+                "autonomy": driver.autonomy,
+                "chargerTypes": list(driver.chargerTypes.all()),
+                "preference": driver.preference,
+                "iban": driver.iban,
+                "profileImage": driver.profileImage,
+                "createdAt": driver.createdAt,
+                "birthDate": driver.birthDate,
+                "points": driver.points,
+            }
+            driver.delete()
+
+            # Recreate the user with the same ID (ID is not changed)
+            user = User.objects.create(
+                id=request.user.id,
+                username=request.user.username,
+                first_name=request.user.first_name,
+                last_name=request.user.last_name,
+                email=request.user.email,
+                birthDate=driver_data['birthDate'],
+                points=driver_data['points'],
+                profileImage=driver_data['profileImage'],
+                createdAt=driver_data['createdAt'],
+            )
+            serialaizer = UserSerializer(user)
+
+            return Response(serialaizer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserToDriver(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request):
+        try:
+            user = get_object_or_404(User, id=request.user.id)
+            data = request.data
+
+            charger_types = data.get('chargerTypes', [])
+            charger_types_objs = [ChargerType.objects.get(
+                chargerType=ct) for ct in charger_types]
+
+            driver = Driver.objects.create(
+                id=request.user.id,
+                username=user.username,
+                first_name=user.first_name,
+                last_name=user.last_name,
+                email=user.email,
+                birthDate=user.birthDate,
+                points=user.points,
+                profileImage=user.profileImage,
+                createdAt=user.createdAt,
+                dni=data['dni'],
+                driverPoints=data.get('driverPoints', 0),
+                autonomy=data.get('autonomy', 0),
+                iban=data.get('iban', '')
+            )
+            driver.chargerTypes.set(charger_types_objs)
+            driver.save()
+            print("driver saved")
+
+            return Response({'message': 'You are now a driver.'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+>>>>>>> origin/development

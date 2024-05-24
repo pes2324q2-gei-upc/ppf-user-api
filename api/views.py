@@ -1,11 +1,9 @@
 """
-This file contains all the views to implement the api    
+This file contains all the views to implement the api
 """
 
 from api.notifications.push_controller import PushController
-from re import M
-from time import process_time_ns
-from urllib import request
+from rest_framework import generics, status
 
 from common.models.route import Route
 from common.models.user import ChargerType, Driver, Report, User

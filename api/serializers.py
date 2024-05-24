@@ -138,6 +138,7 @@ class UserRegisterSerializer(ModelSerializer):
             "birthDate",
             "password",
             "password2",
+            "typeOfLogin",
         ]
         extra_kwargs = {
             "password": {"write_only": True},

@@ -180,11 +180,12 @@ AWS_S3_FILE_OVERWRITE = False
 
 # Media files
 class MediaStorage(S3Boto3Storage):
-    location = "media"  # Path in Bucket to save media files
+    location = "media/"  # Path in Bucket to save media files
     file_overwrite = False
 
-
 # CSS and JS files
+
+
 class StaticStorage(S3Boto3Storage):
     location = "static"  # Path in Bucket to static media files
     file_overwrite = False

@@ -2,14 +2,14 @@
 This module contains the tests for the driver.
 """
 
+import json
+from email import header
+
+from common.models.user import ChargerType, Driver, Preference, User
+from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
-from rest_framework import status
-from common.models.user import Driver, ChargerType, Preference
-
-import json
-
-from rest_framework.authtoken.models import Token
 
 
 class CreateDriverTest(APITestCase):
@@ -69,7 +69,8 @@ class CreateDriverTest(APITestCase):
         self.assertEqual(message.get("birthDate"), "1998-10-06")
         self.assertEqual(message.get("email"), "test@gmail.com")
         self.assertEqual(message.get("chargerTypes"), [self.mennekes.pk])
-        self.assertEqual(message.get("preference").get("canNotTravelWithPets"), True)
+        self.assertEqual(message.get("preference").get(
+            "canNotTravelWithPets"), True)
         self.assertEqual(message.get("preference").get("listenToMusic"), True)
         self.assertEqual(message.get("preference").get("noSmoking"), True)
         self.assertEqual(message.get("preference").get("talkTooMuch"), True)
@@ -100,9 +101,12 @@ class CreateDriverTest(APITestCase):
         response = self.client.post(url, dataUsernameIncorrect, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         message = json.loads(response.content.decode("utf-8"))
-        self.assertIn("A user with that username already exists.", message.get("username"))
-        self.assertIn("driver with this iban already exists.", message.get("iban"))
-        self.assertIn("driver with this dni already exists.", message.get("dni"))
+        self.assertIn("A user with that username already exists.",
+                      message.get("username"))
+        self.assertIn("driver with this iban already exists.",
+                      message.get("iban"))
+        self.assertIn("driver with this dni already exists.",
+                      message.get("dni"))
 
         dataEmailIncorrect = {
             "username": "driverCorrecto",
@@ -143,7 +147,8 @@ class CreateDriverTest(APITestCase):
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         message = json.loads(response.content.decode("utf-8"))
-        self.assertIn("Ensure this field has no more than 36 characters.", message.get("iban"))
+        self.assertIn(
+            "Ensure this field has no more than 36 characters.", message.get("iban"))
 
     # def testDniHas9Characters(self):
     #     """
@@ -226,15 +231,19 @@ class ListDriverTest(APITestCase):
         self.assertEqual(message[0].get("birthDate"), self.driver.birthDate)
         self.assertEqual(message[0].get("email"), self.driver.email)
         self.assertEqual(message[0].get("points"), self.driver.points)
-        self.assertEqual(message[0].get("driverPoints"), self.driver.driverPoints)
+        self.assertEqual(message[0].get(
+            "driverPoints"), self.driver.driverPoints)
         self.assertEqual(message[0].get("autonomy"), self.driver.autonomy)
         self.assertIn(1, message[0].get("chargerTypes"))  # Mennekes is id 1
         self.assertEqual(
             message[0].get("preference").get("canNotTravelWithPets"), False
         )  # Default value
-        self.assertEqual(message[0].get("preference").get("listenToMusic"), False)  # Default value
-        self.assertEqual(message[0].get("preference").get("noSmoking"), False)  # Default value
-        self.assertEqual(message[0].get("preference").get("talkTooMuch"), False)  # Default value
+        self.assertEqual(message[0].get("preference").get(
+            "listenToMusic"), False)  # Default value
+        self.assertEqual(message[0].get("preference").get(
+            "noSmoking"), False)  # Default value
+        self.assertEqual(message[0].get("preference").get(
+            "talkTooMuch"), False)  # Default value
         self.assertEqual(message[0].get("iban"), self.driver.iban)
 
         # Check the details of the second driver
@@ -245,15 +254,19 @@ class ListDriverTest(APITestCase):
         self.assertEqual(message[1].get("birthDate"), self.driver2.birthDate)
         self.assertEqual(message[1].get("email"), self.driver2.email)
         self.assertEqual(message[1].get("points"), self.driver2.points)
-        self.assertEqual(message[1].get("driverPoints"), self.driver2.driverPoints)
+        self.assertEqual(message[1].get("driverPoints"),
+                         self.driver2.driverPoints)
         self.assertEqual(message[1].get("autonomy"), self.driver2.autonomy)
         self.assertIn(2, message[1].get("chargerTypes"))  # Tesla is id 2
         self.assertEqual(
             message[1].get("preference").get("canNotTravelWithPets"), False
         )  # Default value
-        self.assertEqual(message[1].get("preference").get("listenToMusic"), False)  # Default value
-        self.assertEqual(message[1].get("preference").get("noSmoking"), False)  # Default value
-        self.assertEqual(message[1].get("preference").get("talkTooMuch"), False)  # Default value
+        self.assertEqual(message[1].get("preference").get(
+            "listenToMusic"), False)  # Default value
+        self.assertEqual(message[1].get("preference").get(
+            "noSmoking"), False)  # Default value
+        self.assertEqual(message[1].get("preference").get(
+            "talkTooMuch"), False)  # Default value
         self.assertEqual(message[1].get("iban"), self.driver2.iban)
 
         # Check the details of the third driver
@@ -264,15 +277,19 @@ class ListDriverTest(APITestCase):
         self.assertEqual(message[2].get("birthDate"), self.driver3.birthDate)
         self.assertEqual(message[2].get("email"), self.driver3.email)
         self.assertEqual(message[2].get("points"), self.driver3.points)
-        self.assertEqual(message[2].get("driverPoints"), self.driver3.driverPoints)
+        self.assertEqual(message[2].get("driverPoints"),
+                         self.driver3.driverPoints)
         self.assertEqual(message[2].get("autonomy"), self.driver3.autonomy)
         self.assertIn(3, message[2].get("chargerTypes"))  # Schuko is id 3
         self.assertEqual(
             message[2].get("preference").get("canNotTravelWithPets"), False
         )  # Default value
-        self.assertEqual(message[2].get("preference").get("listenToMusic"), False)  # Default value
-        self.assertEqual(message[2].get("preference").get("noSmoking"), False)  # Default value
-        self.assertEqual(message[2].get("preference").get("talkTooMuch"), False)  # Default value
+        self.assertEqual(message[2].get("preference").get(
+            "listenToMusic"), False)  # Default value
+        self.assertEqual(message[2].get("preference").get(
+            "noSmoking"), False)  # Default value
+        self.assertEqual(message[2].get("preference").get(
+            "talkTooMuch"), False)  # Default value
         self.assertEqual(message[2].get("iban"), self.driver3.iban)
 
 
@@ -303,7 +320,8 @@ class GetDriverTest(APITestCase):
         headers = {
             "Authorization": f"Token {self.token}",
         }
-        response = self.client.get(url, format="json", headers=headers)  # type: ignore
+        response = self.client.get(
+            url, format="json", headers=headers)  # type: ignore
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         message = json.loads(response.content.decode("utf-8"))
         self.assertEqual(message.get("id"), self.driver.pk)
@@ -319,9 +337,12 @@ class GetDriverTest(APITestCase):
         self.assertEqual(
             message.get("preference").get("canNotTravelWithPets"), False
         )  # Default value
-        self.assertEqual(message.get("preference").get("listenToMusic"), False)  # Default value
-        self.assertEqual(message.get("preference").get("noSmoking"), False)  # Default value
-        self.assertEqual(message.get("preference").get("talkTooMuch"), False)  # Default value
+        self.assertEqual(message.get("preference").get(
+            "listenToMusic"), False)  # Default value
+        self.assertEqual(message.get("preference").get(
+            "noSmoking"), False)  # Default value
+        self.assertEqual(message.get("preference").get(
+            "talkTooMuch"), False)  # Default value
         self.assertEqual(message.get("iban"), self.driver.iban)
 
     def testDriverDoesNotExist(self):
@@ -384,7 +405,8 @@ class UpdateDriverTest(APITestCase):
             "iban": "ES662100999",
         }
         # Complete PUT
-        response = self.client.put(url, dataPut, format="json", headers=headers)  # type: ignore
+        response = self.client.put(
+            url, dataPut, format="json", headers=headers)  # type: ignore
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         message = json.loads(response.content.decode("utf-8"))
         self.assertEqual(message.get("id"), self.driver.pk)
@@ -394,7 +416,8 @@ class UpdateDriverTest(APITestCase):
         self.assertEqual(message.get("birthDate"), "1999-10-06")
         self.assertEqual(message.get("autonomy"), 100)
         self.assertEqual(message.get("chargerTypes"), [self.tesla.pk])
-        self.assertEqual(message.get("preference").get("canNotTravelWithPets"), True)
+        self.assertEqual(message.get("preference").get(
+            "canNotTravelWithPets"), True)
         self.assertEqual(message.get("preference").get("listenToMusic"), False)
         self.assertEqual(message.get("preference").get("noSmoking"), True)
         self.assertEqual(message.get("preference").get("talkTooMuch"), False)
@@ -404,7 +427,8 @@ class UpdateDriverTest(APITestCase):
         dataPut2 = {
             "iban": "FR0239876567",
         }
-        response = self.client.put(url, dataPut2, format="json", headers=headers)  # type: ignore
+        response = self.client.put(
+            url, dataPut2, format="json", headers=headers)  # type: ignore
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         message = json.loads(response.content.decode("utf-8"))
         updateDriver = Driver.objects.get(pk=self.driver.pk)
@@ -415,7 +439,8 @@ class UpdateDriverTest(APITestCase):
         self.assertEqual(message.get("birthDate"), "1999-10-06")
         self.assertEqual(message.get("autonomy"), updateDriver.autonomy)
         self.assertEqual(message.get("chargerTypes"), [self.tesla.pk])
-        self.assertEqual(message.get("preference").get("canNotTravelWithPets"), True)
+        self.assertEqual(message.get("preference").get(
+            "canNotTravelWithPets"), True)
         self.assertEqual(message.get("preference").get("listenToMusic"), False)
         self.assertEqual(message.get("preference").get("noSmoking"), True)
         self.assertEqual(message.get("preference").get("talkTooMuch"), False)
@@ -439,7 +464,8 @@ class UpdateDriverTest(APITestCase):
             },
             "iban": "ES6621009991",
         }
-        response = self.client.patch(url, dataPatch, format="json", headers=headers)  # type: ignore
+        response = self.client.patch(
+            url, dataPatch, format="json", headers=headers)  # type: ignore
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         message = json.loads(response.content.decode("utf-8"))
         updateDriver = Driver.objects.get(pk=self.driver.pk)
@@ -450,7 +476,8 @@ class UpdateDriverTest(APITestCase):
         self.assertEqual(message.get("birthDate"), "2002-10-06")
         self.assertEqual(message.get("autonomy"), updateDriver.autonomy)
         self.assertEqual(message.get("chargerTypes"), [self.mennekes.pk])
-        self.assertEqual(message.get("preference").get("canNotTravelWithPets"), True)
+        self.assertEqual(message.get("preference").get(
+            "canNotTravelWithPets"), True)
         self.assertEqual(message.get("preference").get("listenToMusic"), True)
         self.assertEqual(message.get("preference").get("noSmoking"), False)
         self.assertEqual(message.get("preference").get("talkTooMuch"), True)
@@ -460,7 +487,8 @@ class UpdateDriverTest(APITestCase):
         dataPatch2 = {
             "iban": "FR6621009991",
         }
-        response = self.client.patch(url, dataPatch2, format="json", headers=headers)  # type: ignore
+        response = self.client.patch(
+            url, dataPatch2, format="json", headers=headers)  # type: ignore
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         message = json.loads(response.content.decode("utf-8"))
         updateDriver = Driver.objects.get(pk=self.driver.pk)
@@ -471,7 +499,8 @@ class UpdateDriverTest(APITestCase):
         self.assertEqual(message.get("birthDate"), "2002-10-06")
         self.assertEqual(message.get("autonomy"), updateDriver.autonomy)
         self.assertEqual(message.get("chargerTypes"), [self.mennekes.pk])
-        self.assertEqual(message.get("preference").get("canNotTravelWithPets"), True)
+        self.assertEqual(message.get("preference").get(
+            "canNotTravelWithPets"), True)
         self.assertEqual(message.get("preference").get("listenToMusic"), True)
         self.assertEqual(message.get("preference").get("noSmoking"), False)
         self.assertEqual(message.get("preference").get("talkTooMuch"), True)
@@ -487,12 +516,15 @@ class UpdateDriverTest(APITestCase):
         responsePut = self.client.put(url, data)
         self.assertEqual(responsePut.status_code, status.HTTP_401_UNAUTHORIZED)
         message = json.loads(responsePut.content.decode("utf-8"))
-        self.assertEqual(message.get("detail"), "Authentication credentials were not provided.")
+        self.assertEqual(message.get("detail"),
+                         "Authentication credentials were not provided.")
 
         responsePatch = self.client.put(url, data)
-        self.assertEqual(responsePatch.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(responsePatch.status_code,
+                         status.HTTP_401_UNAUTHORIZED)
         message = json.loads(responsePatch.content.decode("utf-8"))
-        self.assertEqual(message.get("detail"), "Authentication credentials were not provided.")
+        self.assertEqual(message.get("detail"),
+                         "Authentication credentials were not provided.")
 
     def testDriverNotExists(self):
         """
@@ -504,12 +536,14 @@ class UpdateDriverTest(APITestCase):
         headers = {
             "Authorization": f"Token {self.token}",
         }
-        responsePut = self.client.put(url, data, headers=headers)  # type: ignore
+        responsePut = self.client.put(
+            url, data, headers=headers)  # type: ignore
         self.assertEqual(responsePut.status_code, status.HTTP_404_NOT_FOUND)
         message = json.loads(responsePut.content.decode("utf-8"))
         self.assertEqual(message.get("detail"), "Not found.")
 
-        responsePatch = self.client.patch(url, data, headers=headers)  # type: ignore
+        responsePatch = self.client.patch(
+            url, data, headers=headers)  # type: ignore
         self.assertEqual(responsePatch.status_code, status.HTTP_404_NOT_FOUND)
         message = json.loads(responsePatch.content.decode("utf-8"))
         self.assertEqual(message.get("detail"), "Not found.")
@@ -530,15 +564,19 @@ class UpdateDriverTest(APITestCase):
         url = reverse("driverRetriever", kwargs={"pk": user2.pk})
         data = {"iban": "ES000000000111"}
         headers = {"Authorization": f"Token {self.token}"}
-        responsePut = self.client.put(url, data, headers=headers)  # type: ignore
+        responsePut = self.client.put(
+            url, data, headers=headers)  # type: ignore
         self.assertEqual(responsePut.status_code, status.HTTP_403_FORBIDDEN)
         message = json.loads(responsePut.content.decode("utf-8"))
-        self.assertEqual(message.get("error"), "You can only update your own user account.")
+        self.assertEqual(message.get("error"),
+                         "You can only update your own user account.")
 
-        responsePatch = self.client.patch(url, data, headers=headers)  # type: ignore
+        responsePatch = self.client.patch(
+            url, data, headers=headers)  # type: ignore
         self.assertEqual(responsePatch.status_code, status.HTTP_403_FORBIDDEN)
         message = json.loads(responsePatch.content.decode("utf-8"))
-        self.assertEqual(message.get("error"), "You can only update your own user account.")
+        self.assertEqual(message.get("error"),
+                         "You can only update your own user account.")
 
 
 class DeleteDriverTest(APITestCase):
@@ -581,7 +619,8 @@ class DeleteDriverTest(APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         message = json.loads(response.content.decode("utf-8"))
-        self.assertEqual(message.get("detail"), "Authentication credentials were not provided.")
+        self.assertEqual(message.get("detail"),
+                         "Authentication credentials were not provided.")
 
     def testUserWhoDeleteNotExists(self):
         """
@@ -658,4 +697,27 @@ class DeleteDriverTest(APITestCase):
         response = self.client.delete(url, headers=headers)  # type: ignore
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         message = json.loads(response.content.decode("utf-8"))
-        self.assertEqual(message.get("error"), "You can only delete your own user account.")
+        self.assertEqual(message.get("error"),
+                         "You can only delete your own user account.")
+
+    def testDriverBecomesUser(self):
+        """
+        Ensure the API call returns a 201 status code if the driver becomes a user.
+        """
+        driver = Driver.objects.create(
+            username="test",
+            birthDate="1998-10-06",
+            password="test",
+            email="test@gmail.com",
+            dni="12345678",
+            iban="ES662100999",
+        )
+        token = Token.objects.get_or_create(user=driver)[0].key
+        url = reverse("driverToUser", kwargs={"pk": driver.pk})
+        headers = {
+            "Authorization": f"Token {token}",
+        }
+        response = self.client.post(url, headers=headers)  # type: ignore
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(User.objects.filter(
+            username=driver.username).exists(), True)

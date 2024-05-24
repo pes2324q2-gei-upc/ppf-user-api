@@ -30,14 +30,16 @@ class LoginAPIView(APIView):
                 description="Token successfully created or updated",
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
-                    properties={"token": openapi.Schema(type=openapi.TYPE_STRING)},
+                    properties={"token": openapi.Schema(
+                        type=openapi.TYPE_STRING)},
                 ),
             ),
             401: openapi.Response(
                 description="Unauthorized or invalid credentials",
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
-                    properties={"error": openapi.Schema(type=openapi.TYPE_STRING)},
+                    properties={"error": openapi.Schema(
+                        type=openapi.TYPE_STRING)},
                 ),
             ),
         },
@@ -54,19 +56,22 @@ class LoginAPIView(APIView):
         """
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
-            email = serializer.validated_data.get("email")
-            password = serializer.validated_data.get("password")
+            email = serializer.validated_data.get("email")  # type: ignore
+            password = serializer.validated_data.get(
+                "password")  # type: ignore
             # authenticate use by default the username field, but we are using the email field
             user = authenticate(username=email, password=password)
 
             if user:
                 # Find an active token for the user
-                token = Token.objects.filter(user=user)  # pylint: disable=no-member
+                token = Token.objects.filter(
+                    user=user)  # pylint: disable=no-member
                 if token.exists():
                     token = token.delete()
 
                 # Create a new token for the user
-                token = Token.objects.create(user=user)  # pylint: disable=no-member
+                token = Token.objects.create(
+                    user=user)  # pylint: disable=no-member
                 token.save()
 
                 return Response({"token": token.key})

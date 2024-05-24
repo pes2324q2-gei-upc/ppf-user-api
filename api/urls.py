@@ -33,5 +33,9 @@ urlpatterns = [
         views.UserValuationList.as_view(),
         name="userValuationList",
     ),
+    path("push/register/<int:pk>", views.RegisterFCMToken.as_view(), name="registerFCMToken"),
+    path("push/notify/<int:pk>", views.SendFCMNotification.as_view(), name="notifyUser"),
     path("users/<int:pk>/avatar", views.UserModifyAvatar.as_view(), name="userModifyAvatar"),
+    path("user-to-driver/", views.UserToDriver.as_view(), name="userToDriver"),
+    path("driver-to-user/", views.DriverToUser.as_view(), name="driverToUser"),
 ]

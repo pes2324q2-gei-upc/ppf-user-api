@@ -26,14 +26,8 @@ urlpatterns = [
     path("reports/", views.ReportListCreate.as_view(), name="reportListCreate"),
     path("reports/<int:pk>/", views.ReportRetriever.as_view(), name="reportRetriever"),
     path("users/self/", views.UserIdRetriever.as_view(), name="userIdRetriever"),
-<<<<<<< HEAD
     path("valuate/", views.ValuationListCreate.as_view(), name="valuationListCreate"),
-    path("myValuations/", views.MyValuationList.as_view(), name="myValuationList"),
-=======
-    path("valuate/", views.ValuationListCreate.as_view(),
-         name="valuationListCreate"),
     path("self/valuations/", views.MyValuationList.as_view(), name="myValuationList"),
->>>>>>> origin/development
     path(
         "users/<int:user_id>/valuations/",
         views.UserValuationList.as_view(),
@@ -41,8 +35,7 @@ urlpatterns = [
     ),
     path("push/register/<int:pk>", views.RegisterFCMToken.as_view(), name="registerFCMToken"),
     path("push/notify/<int:pk>", views.SendFCMNotification.as_view(), name="notifyUser"),
-    path("users/<int:pk>/avatar", views.UserModifyAvatar.as_view(),
-         name="userModifyAvatar"),
+    path("users/<int:pk>/avatar", views.UserModifyAvatar.as_view(), name="userModifyAvatar"),
     path("user-to-driver/", views.UserToDriver.as_view(), name="userToDriver"),
     path("driver-to-user/", views.DriverToUser.as_view(), name="driverToUser"),
 ]

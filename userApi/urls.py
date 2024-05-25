@@ -23,6 +23,7 @@ from drf_yasg.views import get_schema_view
 from emailSending import urls as emailSendingUrls
 from rest_framework import authentication, permissions
 from usrLogin import urls as usrLoginUrls
+from achievement import urls as achievementUrls
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -42,5 +43,6 @@ urlpatterns = [
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
     path("", include(apiUrls)),
     path("login/", include(usrLoginUrls)),
-    path("sendEmail/", include(emailSendingUrls)),
+    path("", include(emailSendingUrls)),
+    path("", include(achievementUrls)),
 ]

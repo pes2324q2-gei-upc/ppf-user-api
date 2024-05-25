@@ -17,9 +17,3 @@ class UserLoginSerializer(serializers.Serializer):
 
     email = serializers.EmailField()
     password = serializers.CharField(max_length=128, write_only=True)
-
-    def create(self, validated_data):
-        return
-
-    def update(self, instance, validated_data):
-        return

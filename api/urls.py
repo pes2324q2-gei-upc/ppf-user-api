@@ -19,6 +19,7 @@ from api import views
 from django.urls import path
 
 urlpatterns = [
+    path("logut/", views.Logout.as_view(), name="logout"),
     path("users/", views.UserListCreate.as_view(), name="userListCreate"),
     path("drivers/", views.DriverListCreate.as_view(), name="driverListCreate"),
     path("drivers/<int:pk>/", views.DriverRetriever.as_view(), name="driverRetriever"),

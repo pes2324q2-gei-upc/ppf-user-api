@@ -3,13 +3,13 @@ This file contains all the views to implement the api
 """
 
 from api.notifications.push_controller import PushController
-from rest_framework import generics, status
-
 from common.models.route import Route
-from common.models.user import ChargerType, Driver, Report, User
+from common.models.user import ChargerType, Driver, Preference, Report, User
 from common.models.valuation import Valuation
 from django.shortcuts import get_object_or_404
+from drf_yasg.utils import swagger_auto_schema
 from firebase_admin.exceptions import FirebaseError
+from rest_framework import generics, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.generics import (
@@ -21,12 +21,7 @@ from rest_framework.generics import (
     UpdateAPIView,
 )
 from rest_framework.parsers import FormParser, MultiPartParser
-
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_200_OK,
@@ -35,9 +30,6 @@ from rest_framework.status import (
     HTTP_403_FORBIDDEN,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
-
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .serializers import (
@@ -329,10 +321,6 @@ class UserValuationList(ListAPIView):
         return Valuation.objects.filter(receiver=user)
 
 
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework.views import APIView
-
-
 class RegisterFCMToken(APIView):
     """
     The class that will register the FCM token of the user
@@ -405,12 +393,14 @@ class SendFCMNotification(APIView):
                 status=HTTP_403_FORBIDDEN,
             )
 
-        priority: str = serializer.validated_data.get("priority", "normal")  # type: ignore
+        priority: str = serializer.validated_data.get(
+            "priority", "normal")  # type: ignore
         title: str = serializer.validated_data.get("title")  # type: ignore
         body: str = serializer.validated_data.get("body")  # type: ignore
 
         try:
-            pushController.notifyTo(user, title, body, PushController.FCMPriority(priority))
+            pushController.notifyTo(
+                user, title, body, PushController.FCMPriority(priority))
         except FirebaseError as e:
             return Response(data={"error": "Error sending the FCM notification"}, status=e.code)
         return Response(status=HTTP_201_CREATED)
@@ -466,7 +456,17 @@ class UserToDriver(APIView):
             data = request.data
 
             charger_types = data.get("chargerTypes", [])
-            charger_types_objs = [ChargerType.objects.get(chargerType=ct) for ct in charger_types]
+
+            preferences = data.get("preferences", {})
+            preferenceInstance = Preference.objects.create()
+            preferenceInstance.canNotTravelWithPets = preferences.get(
+                "canNotTravelWithPets", False)
+            preferenceInstance.listenToMusic = preferences.get(
+                "listenToMusic", False)
+            preferenceInstance.noSmoking = preferences.get("noSmoking", False)
+            preferenceInstance.talkTooMuch = preferences.get(
+                "talkTooMuch", False)
+            preferenceInstance.save()
 
             driver = Driver.objects.create(
                 id=request.user.id,
@@ -483,7 +483,8 @@ class UserToDriver(APIView):
                 autonomy=data.get("autonomy", 0),
                 iban=data.get("iban", ""),
             )
-            driver.chargerTypes.set(charger_types_objs)
+            driver.chargerTypes.set(charger_types)
+            driver.preference = preferenceInstance
             driver.save()
             print("driver saved")
 

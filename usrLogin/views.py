@@ -65,9 +65,9 @@ class LoginAPIView(APIView):
 
             if user:
                 # Check if the user is a base user (not a social login user)
-                typeOfLogin = User.objects.filter(
-                    email=email).first().typeOfLogin
-                if typeOfLogin != "base":
+                userLogged = User.objects.filter(
+                    email=email).first()
+                if userLogged and userLogged.typeOfLogin != "base":
                     return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
                 generatedToken = generate_token(user)

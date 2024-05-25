@@ -9,6 +9,7 @@ from common.models.route import Route
 from common.models.user import ChargerType, Driver, Report, User
 from common.models.valuation import Valuation
 from django.shortcuts import get_object_or_404
+from django.contrib.auth import logout
 from firebase_admin.exceptions import FirebaseError
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -488,5 +489,16 @@ class UserToDriver(APIView):
             print("driver saved")
 
             return Response({"message": "You are now a driver."}, status=HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=HTTP_400_BAD_REQUEST)
+
+class Logout(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request):
+        try:
+            logout(request)
+            return Response({"message": "You are now logged out."}, status=HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=HTTP_400_BAD_REQUEST)

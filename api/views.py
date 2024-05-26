@@ -425,6 +425,7 @@ class DriverToUser(APIView):
                 "birthDate": driver.birthDate,
                 "points": driver.points,
                 "password": driver.password,
+                "typeOfLogin": driver.typeOfLogin,
             }
             driver.delete()
 
@@ -440,6 +441,7 @@ class DriverToUser(APIView):
                 points=driver_data["points"],
                 profileImage=driver_data["profileImage"],
                 createdAt=driver_data["createdAt"],
+                typeOfLogin=driver_data.get("typeOfLogin", "base"),
             )
 
             serialaizer = UserSerializer(user)
@@ -482,10 +484,12 @@ class UserToDriver(APIView):
                 points=user.points,
                 profileImage=user.profileImage,
                 createdAt=user.createdAt,
+                typeOfLogin=user.typeOfLogin,
                 dni=data["dni"],
                 driverPoints=data.get("driverPoints", 0),
                 autonomy=data.get("autonomy", 0),
                 iban=data.get("iban", ""),
+
             )
             driver.chargerTypes.set(charger_types)
             driver.preference = preferenceInstance  # type: ignore

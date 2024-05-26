@@ -393,15 +393,13 @@ class SendFCMNotification(APIView):
                 data={"error": "User does not have a device token"},
                 status=HTTP_403_FORBIDDEN,
             )
-
-        priority: str = serializer.validated_data.get(
-            "priority", "normal")  # type: ignore
-        title: str = serializer.validated_data.get("title")  # type: ignore
-        body: str = serializer.validated_data.get("body")  # type: ignore
+        valid = serializer.validated_data
+        priority: str = valid.get("priority", "normal")  # type: ignore
+        title: str = valid.get("title")  # type: ignore
+        body: str = valid.get("body")  # type: ignore
 
         try:
-            pushController.notifyTo(
-                user, title, body, PushController.FCMPriority(priority))
+            pushController.notifyTo(user, title, body, PushController.FCMPriority(priority))
         except FirebaseError as e:
             return Response(data={"error": "Error sending the FCM notification"}, status=e.code)
         return Response(status=HTTP_201_CREATED)
@@ -435,7 +433,7 @@ class DriverToUser(APIView):
                 username=request.user.username,
                 first_name=request.user.first_name,
                 last_name=request.user.last_name,
-                password=driver_data.get("password", '0'),
+                password=driver_data.get("password", "0"),
                 email=request.user.email,
                 birthDate=driver_data["birthDate"],
                 points=driver_data["points"],
@@ -463,13 +461,10 @@ class UserToDriver(APIView):
 
             preferences = data.get("preferences", {})
             preferenceInstance = Preference.objects.create()
-            preferenceInstance.canNotTravelWithPets = preferences.get(
-                "canNotTravelWithPets", False)
-            preferenceInstance.listenToMusic = preferences.get(
-                "listenToMusic", False)
+            preferenceInstance.canNotTravelWithPets = preferences.get("canNotTravelWithPets", False)
+            preferenceInstance.listenToMusic = preferences.get("listenToMusic", False)
             preferenceInstance.noSmoking = preferences.get("noSmoking", False)
-            preferenceInstance.talkTooMuch = preferences.get(
-                "talkTooMuch", False)
+            preferenceInstance.talkTooMuch = preferences.get("talkTooMuch", False)
             preferenceInstance.save()
 
             driver = Driver.objects.create(
@@ -496,6 +491,7 @@ class UserToDriver(APIView):
             return Response({"message": "You are now a driver."}, status=HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=HTTP_400_BAD_REQUEST)
+
 
 class Logout(APIView):
     permission_classes = [IsAuthenticated]

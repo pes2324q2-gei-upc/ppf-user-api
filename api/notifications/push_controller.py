@@ -1,5 +1,6 @@
 from email import message
 from enum import Enum
+from venv import logger
 
 from common.models.fcm import FCMToken
 from common.models.user import User
@@ -27,6 +28,7 @@ class PushController:
 
         rise
         """
+        FCMToken.objects.filter(user=user).delete()
         t = FCMToken(user=user, token=token)
         message = Message(
             token=t.token,
@@ -59,4 +61,5 @@ class PushController:
                 ),
             )
         except FirebaseError | ValueError as e:
-            assert False, f"Error sending notification: {e}"
+            logger.error(f"Failed to send notification {e}")
+            return ""

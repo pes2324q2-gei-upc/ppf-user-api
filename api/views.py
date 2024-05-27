@@ -3,14 +3,14 @@ This file contains all the views to implement the api
 """
 
 from api.notifications.push_controller import PushController
-from rest_framework import generics, status
-
 from common.models.route import Route
-from common.models.user import ChargerType, Driver, Report, User
+from common.models.user import ChargerType, Driver, Preference, Report, User
 from common.models.valuation import Valuation
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import logout
+from drf_yasg.utils import swagger_auto_schema
 from firebase_admin.exceptions import FirebaseError
+from rest_framework import generics, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.generics import (
@@ -22,12 +22,7 @@ from rest_framework.generics import (
     UpdateAPIView,
 )
 from rest_framework.parsers import FormParser, MultiPartParser
-
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_200_OK,
@@ -36,9 +31,6 @@ from rest_framework.status import (
     HTTP_403_FORBIDDEN,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
-
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .serializers import (
@@ -330,10 +322,6 @@ class UserValuationList(ListAPIView):
         return Valuation.objects.filter(receiver=user)
 
 
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework.views import APIView
-
-
 class RegisterFCMToken(APIView):
     """
     The class that will register the FCM token of the user
@@ -405,10 +393,10 @@ class SendFCMNotification(APIView):
                 data={"error": "User does not have a device token"},
                 status=HTTP_403_FORBIDDEN,
             )
-
-        priority: str = serializer.validated_data.get("priority", "normal")  # type: ignore
-        title: str = serializer.validated_data.get("title")  # type: ignore
-        body: str = serializer.validated_data.get("body")  # type: ignore
+        valid = serializer.validated_data
+        priority: str = valid.get("priority", "normal")  # type: ignore
+        title: str = valid.get("title")  # type: ignore
+        body: str = valid.get("body")  # type: ignore
 
         try:
             pushController.notifyTo(user, title, body, PushController.FCMPriority(priority))
@@ -435,6 +423,8 @@ class DriverToUser(APIView):
                 "createdAt": driver.createdAt,
                 "birthDate": driver.birthDate,
                 "points": driver.points,
+                "password": driver.password,
+                "typeOfLogin": driver.typeOfLogin,
             }
             driver.delete()
 
@@ -444,12 +434,15 @@ class DriverToUser(APIView):
                 username=request.user.username,
                 first_name=request.user.first_name,
                 last_name=request.user.last_name,
+                password=driver_data.get("password", "0"),
                 email=request.user.email,
                 birthDate=driver_data["birthDate"],
                 points=driver_data["points"],
                 profileImage=driver_data["profileImage"],
                 createdAt=driver_data["createdAt"],
+                typeOfLogin=driver_data.get("typeOfLogin", "base"),
             )
+
             serialaizer = UserSerializer(user)
 
             return Response(serialaizer.data, status=HTTP_200_OK)
@@ -467,7 +460,14 @@ class UserToDriver(APIView):
             data = request.data
 
             charger_types = data.get("chargerTypes", [])
-            charger_types_objs = [ChargerType.objects.get(chargerType=ct) for ct in charger_types]
+
+            preferences = data.get("preferences", {})
+            preferenceInstance = Preference.objects.create()
+            preferenceInstance.canNotTravelWithPets = preferences.get("canNotTravelWithPets", False)
+            preferenceInstance.listenToMusic = preferences.get("listenToMusic", False)
+            preferenceInstance.noSmoking = preferences.get("noSmoking", False)
+            preferenceInstance.talkTooMuch = preferences.get("talkTooMuch", False)
+            preferenceInstance.save()
 
             driver = Driver.objects.create(
                 id=request.user.id,
@@ -475,22 +475,27 @@ class UserToDriver(APIView):
                 first_name=user.first_name,
                 last_name=user.last_name,
                 email=user.email,
+                password=user.password,
                 birthDate=user.birthDate,
                 points=user.points,
                 profileImage=user.profileImage,
                 createdAt=user.createdAt,
+                typeOfLogin=user.typeOfLogin,
                 dni=data["dni"],
                 driverPoints=data.get("driverPoints", 0),
                 autonomy=data.get("autonomy", 0),
                 iban=data.get("iban", ""),
+
             )
-            driver.chargerTypes.set(charger_types_objs)
+            driver.chargerTypes.set(charger_types)
+            driver.preference = preferenceInstance  # type: ignore
             driver.save()
             print("driver saved")
 
             return Response({"message": "You are now a driver."}, status=HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=HTTP_400_BAD_REQUEST)
+
 
 class Logout(APIView):
     permission_classes = [IsAuthenticated]

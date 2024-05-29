@@ -2,16 +2,29 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from common.models.achievement import UserAchievementProgress, Achievement
 from common.models.valuation import Valuation
-from common.models.user import User
+from common.models.user import User, Driver
+
+
+def initialize_achievements(user):
+    achievements = Achievement.objects.all()
+    for achievement in achievements:
+        # Check if the user already has the achievement
+        if not UserAchievementProgress.objects.filter(user=user, achievement=achievement).exists():
+            UserAchievementProgress.objects.create(user=user, achievement=achievement)
 
 
 # Inicialize all the achievements for the user
 @receiver(post_save, sender=User)
 def user_created(sender, instance, created, **kwargs):
     if created:
-        achievements = Achievement.objects.all()
-        for achievement in achievements:
-            UserAchievementProgress.objects.create(user=instance, achievement=achievement)
+        initialize_achievements(instance)
+
+
+# Inicialize all the achievements for the driver
+@receiver(post_save, sender=Driver)
+def driver_created(sender, instance, created, **kwargs):
+    if created:
+        initialize_achievements(instance)
 
 
 # Valuate 1 user

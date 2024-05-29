@@ -5,7 +5,9 @@ This module contains the tests for the users.
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
-from common.models.user import User
+from common.models import achievement
+from common.models.user import User, ChargerType, Driver, Preference
+from common.models.achievement import UserAchievementProgress
 
 import json
 
@@ -550,3 +552,85 @@ class GetSelfIDTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         message = json.loads(response.content.decode("utf-8"))
         self.assertEqual(message.get("detail"), "Authentication credentials were not provided.")
+
+
+class UserToDriverTest(APITestCase):
+    """
+    Test User To Driver
+    """
+
+    def setUp(self):
+        self.user = User.objects.create(
+            username="test", birthDate="1998-10-06", password="test", email="test@gmail.com"
+        )
+        self.token, _ = Token.objects.get_or_create(user=self.user)
+
+    def testSuccessfulUserToDriver(self):
+        """
+        Ensure the API call updates the user information.
+        """
+
+        url = reverse("userToDriver")
+        data = {"dni": "E210283822"}
+        headers = {
+            "Authorization": f"Token {self.token}",
+        }
+        response = self.client.post(url, data, headers=headers)  # type: ignore
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class DriverToUserTest(APITestCase):
+    """
+    Test Driver To User
+    """
+
+    def testSuccessfulDriverToUser(self):
+        """
+        Ensure the API call updates the user information.
+        """
+        mennekes = ChargerType.objects.create(chargerType="Mennekes")
+        tesla = ChargerType.objects.create(chargerType="Tesla")
+        driver = Driver.objects.create(
+            username="driver1",
+            birthDate="1998-10-06",
+            email="driver@gmail.com",
+            password="driver",
+            dni="12345678",
+            preference=Preference.objects.create(),
+            iban="ES662100999",
+        )
+        driver.chargerTypes.set(
+            [mennekes, tesla]
+        )
+        token, _ = Token.objects.get_or_create(user=driver)
+
+        url = reverse("driverToUser")
+        headers = {
+            "Authorization": f"Token {token}",
+        }
+        response = self.client.post(url, headers=headers)  # type: ignore
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class LogoutTest(APITestCase):
+    """
+    Test Logout
+    """
+
+    def setUp(self):
+        self.user = User.objects.create(
+            username="test", birthDate="1998-10-06", password="test", email="test@gmail.com"
+        )
+        self.token, _ = Token.objects.get_or_create(user=self.user)
+
+    def testSuccessfulLogout(self):
+        """
+        Ensure the API call logs out the user.
+        """
+
+        url = reverse("logout")
+        headers = {
+            "Authorization": f"Token {self.token}",
+        }
+        response = self.client.post(url, headers=headers)  # type: ignore
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

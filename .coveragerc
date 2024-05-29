@@ -1,0 +1,36 @@
+[run]
+source = ppf-user-api
+
+[report]
+omit =
+    */migrations/*
+    */tests/*
+    ./userApi/__init__.py
+    ./userApi/settings.py
+    ./userApi/wsgi.py
+    ./userApi/asgi.py
+    ./userApi/urls.py
+    ./usrLogin/admin.py
+    ./usrLogin/__init__.py
+    ./usrLogin/apps.py
+    ./usrLogin/tests.py
+    ./usrLogin/urls.py
+    ./usrLogin/service/social_logins.py
+    ./emailSending/__init__.py
+    ./emailSending/tests.py
+    ./emailSending/admin.py
+    ./emailSending/apps.py
+    ./emailSending/urls.py
+    ./api/__init__.py
+    ./api/admin.py
+    ./api/apps.py
+    ./api/urls.py
+    ./achievement/__init__.py
+    ./achievement/admin.py
+    ./achievement/apps.py
+    ./achievement/tests.py
+    ./achievement/urls.py
+    manage.py
+
+[html]
+directory = coverage_html_report

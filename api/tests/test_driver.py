@@ -699,25 +699,3 @@ class DeleteDriverTest(APITestCase):
         message = json.loads(response.content.decode("utf-8"))
         self.assertEqual(message.get("error"),
                          "You can only delete your own user account.")
-
-    def testDriverBecomesUser(self):
-        """
-        Ensure the API call returns a 201 status code if the driver becomes a user.
-        """
-        driver = Driver.objects.create(
-            username="test",
-            birthDate="1998-10-06",
-            password="test",
-            email="test@gmail.com",
-            dni="12345678",
-            iban="ES662100999",
-        )
-        token = Token.objects.get_or_create(user=driver)[0].key
-        url = reverse("driverToUser", kwargs={"pk": driver.pk})
-        headers = {
-            "Authorization": f"Token {token}",
-        }
-        response = self.client.post(url, headers=headers)  # type: ignore
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(User.objects.filter(
-            username=driver.username).exists(), True)

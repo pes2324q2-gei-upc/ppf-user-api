@@ -5,6 +5,7 @@ from common.models.valuation import Valuation
 from common.models.user import User, Driver
 
 
+# Inicialize all the achievements for the user/driver
 def initialize_achievements(user):
     achievements = Achievement.objects.all()
     for achievement in achievements:
@@ -13,14 +14,12 @@ def initialize_achievements(user):
             UserAchievementProgress.objects.create(user=user, achievement=achievement)
 
 
-# Inicialize all the achievements for the user
 @receiver(post_save, sender=User)
 def user_created(sender, instance, created, **kwargs):
     if created:
         initialize_achievements(instance)
 
 
-# Inicialize all the achievements for the driver
 @receiver(post_save, sender=Driver)
 def driver_created(sender, instance, created, **kwargs):
     if created:

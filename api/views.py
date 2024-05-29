@@ -44,6 +44,7 @@ from .serializers import (
     UserImageUpdateSerializer,
     UserRegisterSerializer,
     UserSerializer,
+    UserToDriverSerializer,
     ValuationRegisterSerializer,
     ValuationSerializer,
 )
@@ -472,6 +473,7 @@ class DriverToUser(APIView):
 class UserToDriver(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
+    serializer_class = UserToDriverSerializer
 
     def post(self, request):
         try:

@@ -3,11 +3,13 @@ This file contains all the views to implement the api
 """
 
 from api.notifications.push_controller import PushController
+from common.models.achievement import UserAchievementProgress
 from common.models.route import Route
 from common.models.user import ChargerType, Driver, Preference, Report, User
 from common.models.valuation import Valuation
-from django.shortcuts import get_object_or_404
 from django.contrib.auth import logout
+from django.forms import model_to_dict
+from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from firebase_admin.exceptions import FirebaseError
 from rest_framework import generics, status
@@ -399,7 +401,8 @@ class SendFCMNotification(APIView):
         body: str = valid.get("body")  # type: ignore
 
         try:
-            pushController.notifyTo(user, title, body, PushController.FCMPriority(priority))
+            pushController.notifyTo(
+                user, title, body, PushController.FCMPriority(priority))
         except FirebaseError as e:
             return Response(data={"error": "Error sending the FCM notification"}, status=e.code)
         return Response(status=HTTP_201_CREATED)
@@ -412,6 +415,14 @@ class DriverToUser(APIView):
     def post(self, request):
         try:
             driver = get_object_or_404(Driver, id=request.user.id)
+            achivements = UserAchievementProgress.objects.filter(
+                user=request.user
+            )
+            vector_achivements_data = []
+            for achivement in achivements:
+                vector_achivements_data.append(model_to_dict(achivement))
+
+            print(achivements)
             driver_data = {
                 "dni": driver.dni,
                 "driverPoints": driver.driverPoints,
@@ -442,6 +453,15 @@ class DriverToUser(APIView):
                 createdAt=driver_data["createdAt"],
                 typeOfLogin=driver_data.get("typeOfLogin", "base"),
             )
+            achivements = UserAchievementProgress.objects.filter(user=user)
+
+            i = 0
+            for achivement in achivements:
+                achivement.date_achieved = vector_achivements_data[i]["date_achieved"]
+                achivement.progress = vector_achivements_data[i]["progress"]
+                achivement.achieved = vector_achivements_data[i]["achieved"]
+                achivement.save()
+                i += 1
 
             serialaizer = UserSerializer(user)
 
@@ -463,10 +483,13 @@ class UserToDriver(APIView):
 
             preferences = data.get("preferences", {})
             preferenceInstance = Preference.objects.create()
-            preferenceInstance.canNotTravelWithPets = preferences.get("canNotTravelWithPets", False)
-            preferenceInstance.listenToMusic = preferences.get("listenToMusic", False)
+            preferenceInstance.canNotTravelWithPets = preferences.get(
+                "canNotTravelWithPets", False)
+            preferenceInstance.listenToMusic = preferences.get(
+                "listenToMusic", False)
             preferenceInstance.noSmoking = preferences.get("noSmoking", False)
-            preferenceInstance.talkTooMuch = preferences.get("talkTooMuch", False)
+            preferenceInstance.talkTooMuch = preferences.get(
+                "talkTooMuch", False)
             preferenceInstance.save()
 
             driver = Driver.objects.create(

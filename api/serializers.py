@@ -162,7 +162,8 @@ class UserRegisterSerializer(ModelSerializer):
                     continue  # Skip validation if value is not a string
 
                 if not value.strip():  # Check if value is a blank string
-                    raise ValidationError(f"{field_name.capitalize()} cannot be blank.")
+                    raise ValidationError(
+                        f"{field_name.capitalize()} cannot be blank.")
         return attrs
 
     def create(self, validated_data):
@@ -229,7 +230,8 @@ class DriverSerializer(UserSerializer):
             instance.chargerTypes.clear()
             # Add new relations
             for chargerTypeData in chargerTypesData:
-                chargerType = ChargerType.objects.get(chargerType=chargerTypeData)
+                chargerType = ChargerType.objects.get(
+                    chargerType=chargerTypeData)
                 instance.chargerTypes.add(chargerType)
 
         preferenceData = validated_data.pop("preference", None)
@@ -239,9 +241,12 @@ class DriverSerializer(UserSerializer):
             preference.canNotTravelWithPets = preferenceData.get(
                 "canNotTravelWithPets", preference.canNotTravelWithPets
             )
-            preference.listenToMusic = preferenceData.get("listenToMusic", preference.listenToMusic)
-            preference.noSmoking = preferenceData.get("noSmoking", preference.noSmoking)
-            preference.talkTooMuch = preferenceData.get("talkTooMuch", preference.talkTooMuch)
+            preference.listenToMusic = preferenceData.get(
+                "listenToMusic", preference.listenToMusic)
+            preference.noSmoking = preferenceData.get(
+                "noSmoking", preference.noSmoking)
+            preference.talkTooMuch = preferenceData.get(
+                "talkTooMuch", preference.talkTooMuch)
             preference.save()
 
         return super().update(instance, validated_data)
@@ -301,7 +306,8 @@ class DriverRegisterSerializer(ModelSerializer):
                     continue  # Skip validation if value is not a string
 
                 if not value.strip():  # Check if value is a blank string
-                    raise ValidationError(f"{field_name.capitalize()} cannot be blank.")
+                    raise ValidationError(
+                        f"{field_name.capitalize()} cannot be blank.")
         return attrs
 
     def create(self, validated_data):
@@ -312,13 +318,15 @@ class DriverRegisterSerializer(ModelSerializer):
 
         preference = Preference.objects.create(**preferenceData)
 
-        driver = Driver.objects.create_user(**validated_data, preference=preference)
+        driver = Driver.objects.create_user(
+            **validated_data, preference=preference)
         driver.set_password(password)
         driver.save()
 
         if chargerTypesData:
             for chargerTypeData in chargerTypesData:
-                chargerType = ChargerType.objects.get(chargerType=chargerTypeData)
+                chargerType = ChargerType.objects.get(
+                    chargerType=chargerTypeData)
                 driver.chargerTypes.add(chargerType)
 
         return driver
@@ -395,7 +403,8 @@ class ValuationRegisterSerializer(ModelSerializer):
         giver = self.context["request"].user
 
         if not User.objects.filter(pk=receiverId).exists():
-            raise ValidationError({"error": "Invalid receiver ID. User not found."})
+            raise ValidationError(
+                {"error": "Invalid receiver ID. User not found."})
 
         receiver = User.objects.get(pk=receiverId)
 
@@ -407,23 +416,27 @@ class ValuationRegisterSerializer(ModelSerializer):
             Route.objects.filter(driver=receiver, pk=route_id).exists()
             or Route.objects.filter(passengers=receiver, pk=route_id).exists()
         ):
-            raise ValidationError({"error": "The receiver is not part of the route."})
+            raise ValidationError(
+                {"error": "The receiver is not part of the route."})
 
         # The giver, i.e the authificated user, belongs to the route
         if not (
             Route.objects.filter(driver=giver, pk=route_id).exists()
             or Route.objects.filter(passengers=giver, pk=route_id).exists()
         ):
-            raise ValidationError({"error": "The giver is not part of the route."})
+            raise ValidationError(
+                {"error": "The giver is not part of the route."})
 
         if (
             Route.objects.filter(passengers=giver, pk=route_id).exists()
             and Route.objects.filter(passengers=receiver, pk=route_id).exists()
         ):
-            raise ValidationError({"error": "A passenger cannot value other passengers."})
+            raise ValidationError(
+                {"error": "A passenger cannot value other passengers."})
 
         if Valuation.objects.filter(giver=giver, receiver=receiver, route_id=route_id).exists():
-            raise ValidationError({"error": "You have already rated this user in this route."})
+            raise ValidationError(
+                {"error": "You have already rated this user in this route."})
 
         return attrs
 
@@ -461,3 +474,12 @@ class FCMessageSerializer(Serializer):
     title = CharField(max_length=255)
     body = CharField(max_length=255)
     priority = ChoiceField(choices=["normal", "high"], required=False)
+
+
+class UserToDriverSerializer(Serializer):
+    dni = CharField(max_length=9)
+    iban = CharField(max_length=34)
+    autonomy = IntegerField()
+    preferences = PreferenceSerializer()
+    chargerTypes = ChargerTypeSerializer(many=True)
+    driverPoints = IntegerField()
